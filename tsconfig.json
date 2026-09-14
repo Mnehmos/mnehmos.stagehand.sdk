@@ -95,6 +95,10 @@
     "packages/*/src",
     "packages/compatibility/*/src",
     "plugins/*/src",
-    "examples/*/src"
+    "examples/*/src",
+    "packages/*/test",
+    "packages/compatibility/*/test",
+    "plugins/*/test",
+    "examples/*/test"
   ]
 }

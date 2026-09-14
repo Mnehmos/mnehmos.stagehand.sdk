@@ -288,20 +288,43 @@ Frozen aliases. They stay resolvable through `docs/corpus/` and must never be mi
 
 Superseded Pass-9 identities are frozen aliases into docs/corpus/. They must never be minted again for new work. Live specs, tasks, and tests use v2 identities only.
 
-## Open reconciliation items
+## Reconciliation decisions
 
-Recorded so they are not silently absorbed. Each needs a maintainer decision before the
-affected feature converges.
+Settled. These were open questions during M0 and are now decided; each is enforced or
+recorded for a reason given below.
 
-1. **v2 requirement statements have no artifact of record.** The issue graph fixes the v2
-   ranges but not their text. M1+ authors them from the corpus seed named per feature above.
-   Until a feature's `/speckit-specify` run lands, its v2 requirements are reserved, not defined.
-2. **Dependency drift between the corpus ledger and the issue graph.** `FEAT-012`, `FEAT-013`,
-   `FEAT-014`, and `FEAT-015` declare `FEAT-005`/`FEAT-006` dependencies in the issue graph that
-   `docs/corpus/30_FEATURE_LEDGER.md` does not list. The issue graph is treated as newer; the
-   difference is preserved per feature above.
-3. **Milestone names collide across schemes.** The roadmap's `M0..M7` and the rebuild plan's
-   `M1..M9` are different partitions of the same work. This ledger records both.
-4. **Release-blocking provenance.** `U-002` (LLM-Chess root license) and `U-003` (Virtual
-   Classroom root license) remain unresolved in `docs/corpus/analysis/24_UNKNOWNS.md`.
-   Constitution Article XI gates public distribution of `FEAT-016`-derived code on them.
+### DR-001 · v2 requirements are authored per feature, inside that feature's own Spec Kit run
+
+**Decision.** A feature's v2 requirement range is authored during its /speckit-specify step, in the feature's own spec.md, grounded in the corpus evidence the ledger names for it. There is no up-front batch authoring of all 99 requirements, and no alias layer mapping corpus FRs onto v2 FRs.
+
+**Rationale.** The v2 ranges are a capability-bound re-decomposition of the corpus's surface-bound requirements, so no mechanical mapping exists: for FEAT-001 the corpus has 6 requirements against 7 v2 slots, FEAT-006 has 1 against 5, FEAT-011 has 7 against 4. Authoring them in one batch would mean writing 99 statements detached from the feature context that gives them meaning, with no reviewer able to check them against anything. Per-feature authorship keeps each module independent, produces 4-7 statements that can actually be reviewed against the corpus seed in front of the reader, needs no adapter machinery, and duplicates nothing. Nothing is blocked in the meantime: the ranges are reserved, non-colliding, and non-reusable from M0 onward.
+
+**Enforced by.** pnpm check:ids verifies that once a feature's live spec exists, its requirement set equals its declared range exactly - no gaps, no extras, no foreign identities.
+
+### DR-002 · The issue graph is canonical for feature dependencies
+
+**Decision.** Where docs/corpus/30_FEATURE_LEDGER.md and the GitHub issue graph disagree about what a feature depends on (FEAT-012, FEAT-013, FEAT-014, FEAT-015), the issue graph wins. The corpus values are retained in the ledger for provenance only.
+
+**Rationale.** The issue graph post-dates the corpus and is the implementation plan; the corpus ledger recorded design-time dependencies before the milestone structure existed. Dependency edges used by tools/boundaries.mjs are derived from the issue graph, so the enforcement and the decision cannot disagree.
+
+**Enforced by.** pnpm check:boundaries re-derives every internal dependency edge from the ledger's deps_issue_graph and fails on any package.json edge that is not implied by it.
+
+### DR-003 · Roadmap milestones M0-M7 are the tracking milestones
+
+**Decision.** The roadmap's M0..M7 (issue #1) are the project's tracking milestones. The rebuild plan's M1..M9 are a historical design partition of the same work and are not used for tracking. Both remain recorded per feature.
+
+**Rationale.** Two milestone schemes naming the same letters for different groupings is a standing source of confusion. Tracking needs exactly one; provenance needs both, and the ledger keeps both.
+
+**Enforced by.** human review; no mechanical gate, recorded so the ambiguity is not re-litigated.
+
+## Remaining open items
+
+Not resolvable from the corpus or from engineering judgement.
+
+### U-002 / U-003 · Root software licenses for LLM-Chess and Virtual Classroom
+
+U-002: the LLM-Chess root LICENSE fetch returned 404 at the pinned commit. U-003: the Virtual Classroom tree exposed no project LICENSE. Constitution Article XI forbids releasing source-derived compatibility or plugin material until these are resolved, which gates FEAT-016 (plugins/chess, packages/compatibility/llm-chess) and any Virtual Classroom-derived plugin code.
+
+**Needs:** A maintainer/legal decision. Not a specification question and not resolvable from the corpus.
+
+**Tracked in:** `docs/corpus/analysis/24_UNKNOWNS.md`

@@ -9,7 +9,32 @@ Mixed-stream lexer and parser for narration-plus-control input, batch and stream
 | Directory | `packages/parser` |
 | Owner features | FEAT-001 |
 | Internal dependencies | none |
-| Status | scaffolded (M0) — no behavior implemented |
+| Status | implemented — FEAT-001 converged through T-019..T-024 |
+
+## Usage
+
+```ts
+import { parseScript, splitChannels, StreamingParser } from '@stagehand/parser';
+
+const segments = parseScript('Venice grew rich [map.focus id=venice] on trade.');
+const { narration, commands } = splitChannels(segments);
+// narration: ['Venice grew rich', 'on trade.']  ← the only channel a host may speak
+// commands:  [{ action: 'map.focus', kwargs: { id: 'venice' }, ... }]
+
+// Streaming drives the same machinery, so segmentation is identical for any chunking.
+const parser = new StreamingParser({ lookupSchema: registry.lookup });
+for (const chunk of chunks) host.handle(parser.feed(chunk));
+host.handle(parser.flush());
+```
+
+## What this module guarantees
+
+- **A `text` segment is safe to speak.** Any span the parser classified as control — including a
+  malformed one, an unterminated one, or one whose brackets were lost — never becomes narration.
+- **It classifies; it does not authorize.** An unknown action still parses to a command segment.
+  Registry rejection is `packages/registry`'s boundary, and it rejects rather than reparses.
+- **Batch and streaming agree.** Both drive one `CompoundFolder`, so equivalence is structural
+  rather than maintained by hand.
 
 ## Requirements owned
 

@@ -162,23 +162,31 @@ function renderRootTsconfig(workspaces) {
       baseUrl: '.',
       paths,
     },
-    include: ['packages/*/src', 'packages/compatibility/*/src', 'plugins/*/src', 'examples/*/src'],
+    include: [
+      'packages/*/src', 'packages/compatibility/*/src', 'plugins/*/src', 'examples/*/src',
+      'packages/*/test', 'packages/compatibility/*/test', 'plugins/*/test', 'examples/*/test',
+    ],
   };
   return JSON.stringify(doc, null, 2) + '\n';
 }
 
 function expectedFiles(workspaces, ledger) {
   const owners = ownersByFeature(workspaces);
-  const files = new Map();
+  const structural = new Map();
+  const seeds = new Map();
   for (const ws of workspaces) {
     const internalDeps = internalDepsFor(ws, ledger, owners);
-    files.set(`${ws.dir}/package.json`, renderPackageJson(ws, internalDeps));
-    files.set(`${ws.dir}/tsconfig.json`, renderTsconfig(ws));
-    files.set(`${ws.dir}/src/index.ts`, renderIndex(ws, ledger, internalDeps));
-    files.set(`${ws.dir}/README.md`, renderReadme(ws, ledger, internalDeps));
+    // Structural: the generator owns these outright and they must stay byte-identical.
+    structural.set(`${ws.dir}/package.json`, renderPackageJson(ws, internalDeps));
+    structural.set(`${ws.dir}/tsconfig.json`, renderTsconfig(ws));
+    // Seeds: created once, then owned by the feature that implements them. index.ts acquires real
+    // exports and README.md acquires real documentation; neither may be held byte-identical to a
+    // scaffold placeholder once the module is alive.
+    seeds.set(`${ws.dir}/src/index.ts`, renderIndex(ws, ledger, internalDeps));
+    seeds.set(`${ws.dir}/README.md`, renderReadme(ws, ledger, internalDeps));
   }
-  files.set('tsconfig.json', renderRootTsconfig(workspaces));
-  return files;
+  structural.set('tsconfig.json', renderRootTsconfig(workspaces));
+  return { structural, seeds };
 }
 
 function graphOf(workspaces, ledger) {
@@ -223,44 +231,43 @@ function main() {
     if (!ledger.features.some((x) => x.feature === f)) errors.push(`workspace declares unknown owner feature ${f}`);
   }
 
-  const files = expectedFiles(workspaces, ledger);
+  const { structural, seeds } = expectedFiles(workspaces, ledger);
 
   if (write) {
     if (errors.length) {
       console.log(JSON.stringify({ status: 'REFUSED-WRITE', errors }, null, 2));
       process.exit(1);
     }
-    for (const [relPath, content] of files) {
+    let written = 0;
+    let seeded = 0;
+    for (const [relPath, content] of structural) {
       const abs = path.join(ROOT, relPath);
       fs.mkdirSync(path.dirname(abs), { recursive: true });
       fs.writeFileSync(abs, content);
+      written++;
     }
-    console.log(JSON.stringify({ status: 'WROTE', workspaces: workspaces.length, files: files.size }, null, 2));
+    for (const [relPath, content] of seeds) {
+      const abs = path.join(ROOT, relPath);
+      if (fs.existsSync(abs)) continue; // seed once; the owning feature takes it from there
+      fs.mkdirSync(path.dirname(abs), { recursive: true });
+      fs.writeFileSync(abs, content);
+      seeded++;
+    }
+    console.log(JSON.stringify({ status: 'WROTE', workspaces: workspaces.length, structural_files: written, seeds_created: seeded }, null, 2));
     return;
   }
 
-  // Byte-exact comparison against the rendered tree.
+  // Structural files are compared byte-exactly; seeds only have to exist.
   let checked = 0;
-  for (const [relPath, content] of files) {
+  for (const [relPath, content] of structural) {
     const abs = path.join(ROOT, relPath);
     if (!fs.existsSync(abs)) { errors.push(`${relPath} is missing; run tools/workspaces.mjs --write`); continue; }
     checked++;
     if (norm(read(abs)) !== norm(content)) errors.push(`${relPath} differs from the generated skeleton; run tools/workspaces.mjs --write`);
   }
-
-  // No stray source files pretending to be part of an unimplemented feature.
-  for (const ws of workspaces) {
-    const srcDir = path.join(ROOT, ws.dir, 'src');
-    if (!fs.existsSync(srcDir)) continue;
-    const found = fs.readdirSync(srcDir, { recursive: true, withFileTypes: true })
-      .filter((e) => e.isFile())
-      .map((e) => path.join(e.parentPath ?? e.path, e.name));
-    for (const f of found) {
-      const relPath = rel(f);
-      if (relPath.endsWith('.ts') && !files.has(relPath)) {
-        errors.push(`${relPath} is an unaccounted source file; expected only src/index.ts at M0`);
-      }
-    }
+  for (const relPath of seeds.keys()) {
+    const abs = path.join(ROOT, relPath);
+    if (!fs.existsSync(abs)) errors.push(`${relPath} is missing; run tools/workspaces.mjs --write to seed it`);
   }
 
   // Declared package names must be unique and consistently scoped.

@@ -208,7 +208,7 @@ function verify(alloc, ledger, rows, parity, { enforceLiveSpecs }) {
   if (bounds.test.from <= alloc.superseded.test.to) errors.push('v2 TEST range overlaps superseded v1 TEST range');
   if (bounds.task.from <= alloc.superseded.task.to) errors.push('v2 task range overlaps superseded v1 task range');
 
-  // --- live specs must not mint superseded identities --------------------
+  // --- live specs must not mint superseded identities, and must cover their range ---
   // Scans the contents of every live spec directory. Files sitting directly in specs/ are
   // documentation about the scheme and are allowed to name the superseded ranges; anything inside
   // a spec directory is spec content and is not.
@@ -235,6 +235,9 @@ function verify(alloc, ledger, rows, parity, { enforceLiveSpecs }) {
       }
     }
     for (const o of [...new Set(offenders)]) errors.push(o);
+
+    // DR-001: ranges are reserved from M0, defined per feature, and enforced once defined.
+    verifyLiveSpecCoverage(alloc, errors);
   }
 
   return errors;
@@ -308,24 +311,35 @@ function renderMarkdown(alloc, ledger) {
   L.push('');
   L.push(alloc.superseded.policy);
   L.push('');
-  L.push('## Open reconciliation items');
+  L.push('## Reconciliation decisions');
   L.push('');
-  L.push('Recorded so they are not silently absorbed. Each needs a maintainer decision before the');
-  L.push('affected feature converges.');
+  L.push('Settled. These were open questions during M0 and are now decided; each is enforced or');
+  L.push('recorded for a reason given below.');
   L.push('');
-  L.push('1. **v2 requirement statements have no artifact of record.** The issue graph fixes the v2');
-  L.push('   ranges but not their text. M1+ authors them from the corpus seed named per feature above.');
-  L.push('   Until a feature\'s `/speckit-specify` run lands, its v2 requirements are reserved, not defined.');
-  L.push('2. **Dependency drift between the corpus ledger and the issue graph.** `FEAT-012`, `FEAT-013`,');
-  L.push('   `FEAT-014`, and `FEAT-015` declare `FEAT-005`/`FEAT-006` dependencies in the issue graph that');
-  L.push('   `docs/corpus/30_FEATURE_LEDGER.md` does not list. The issue graph is treated as newer; the');
-  L.push('   difference is preserved per feature above.');
-  L.push('3. **Milestone names collide across schemes.** The roadmap\'s `M0..M7` and the rebuild plan\'s');
-  L.push('   `M1..M9` are different partitions of the same work. This ledger records both.');
-  L.push('4. **Release-blocking provenance.** `U-002` (LLM-Chess root license) and `U-003` (Virtual');
-  L.push('   Classroom root license) remain unresolved in `docs/corpus/analysis/24_UNKNOWNS.md`.');
-  L.push('   Constitution Article XI gates public distribution of `FEAT-016`-derived code on them.');
+  for (const d of alloc.reconciliation.decisions) {
+    L.push(`### ${d.id} · ${d.title}`);
+    L.push('');
+    L.push(`**Decision.** ${d.decision}`);
+    L.push('');
+    L.push(`**Rationale.** ${d.rationale}`);
+    L.push('');
+    L.push(`**Enforced by.** ${d.enforced_by}`);
+    L.push('');
+  }
+  L.push('## Remaining open items');
   L.push('');
+  L.push('Not resolvable from the corpus or from engineering judgement.');
+  L.push('');
+  for (const o of alloc.reconciliation.open) {
+    L.push(`### ${o.id} · ${o.title}`);
+    L.push('');
+    L.push(o.detail);
+    L.push('');
+    L.push(`**Needs:** ${o.needs}`);
+    L.push('');
+    L.push(`**Tracked in:** \`${o.tracked_in}\``);
+    L.push('');
+  }
   return L.join('\n');
 }
 
@@ -355,6 +369,84 @@ const specDir = (f) => specDirMap[f.feature] ?? '(unmapped)';
 // a fabricated path.
 const slug = (f) => specDir(f).replace(/^\d{3}-/, '');
 const liveDir = (f) => `specs/<n>-${slug(f)}/`;
+
+/** Locate a feature's live spec directory by slug suffix, whatever numeric prefix Spec Kit gave it. */
+function liveSpecDir(alloc, feature) {
+  const specsDir = path.join(ROOT, 'specs');
+  if (!fs.existsSync(specsDir)) return null;
+  const want = slug(alloc.features.find((f) => f.feature === feature) ?? {});
+  const hits = fs.readdirSync(specsDir, { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .map((e) => e.name)
+    .filter((n) => n === want || n.endsWith(`-${want}`));
+  if (hits.length > 1) return { ambiguous: hits };
+  return hits.length === 1 ? path.join(specsDir, hits[0]) : null;
+}
+
+/**
+ * DR-001 enforcement. A feature's range is reserved from M0 but only *defined* once its live spec
+ * exists; at that point the spec must cover its range exactly. Until then nothing is required.
+ */
+function verifyLiveSpecCoverage(alloc, errors) {
+  for (const f of alloc.features) {
+    const dir = liveSpecDir(alloc, f.feature);
+    if (!dir) continue; // range reserved, not yet authored - that is a valid state
+    if (dir.ambiguous) {
+      errors.push(`${f.feature}: multiple live spec directories match slug "${slug(f)}": ${dir.ambiguous.join(', ')}`);
+      continue;
+    }
+    const specPath = path.join(dir, 'spec.md');
+    if (!fs.existsSync(specPath)) {
+      errors.push(`${rel(dir)}/spec.md is missing; a live spec directory must contain a specification`);
+      continue;
+    }
+
+    const idsIn = (file) => {
+      const text = read(file);
+      return {
+        fr: new Set([...text.matchAll(/\bFR-(\d{3})\b/g)].map((m) => `FR-${m[1]}`)),
+        test: new Set([...text.matchAll(/\bTEST-(\d{3})\b/g)].map((m) => `TEST-${m[1]}`)),
+        task: new Set([...text.matchAll(/\bT-(\d{3})\b/g)].map((m) => `T-${m[1]}`)),
+      };
+    };
+
+    const wantFr = [];
+    for (let n = f.v2.fr.from; n <= f.v2.fr.to; n++) wantFr.push(`FR-${String(n).padStart(3, '0')}`);
+    const wantFrRange = `FR-${String(f.v2.fr.from).padStart(3, '0')}..FR-${String(f.v2.fr.to).padStart(3, '0')}`;
+    const inSpec = idsIn(specPath);
+    const missing = wantFr.filter((id) => !inSpec.fr.has(id));
+    const extra = [...inSpec.fr].sort().filter((id) => !wantFr.includes(id));
+    if (missing.length) errors.push(`${f.feature}: ${rel(specPath)} does not define ${missing.join(', ')}`);
+    if (extra.length) errors.push(`${f.feature}: ${rel(specPath)} defines ${extra.join(', ')}, outside its declared range ${wantFrRange}`);
+
+    // Test and task references are checked across the whole spec directory.
+    const dirTest = new Set();
+    const dirTask = new Set();
+    const walkDir = (d) => {
+      for (const entry of fs.readdirSync(d, { withFileTypes: true })) {
+        const p = path.join(d, entry.name);
+        if (entry.isDirectory()) { walkDir(p); continue; }
+        if (!/\.(md|json|ya?ml)$/.test(entry.name)) continue;
+        const ids = idsIn(p);
+        for (const t of ids.test) dirTest.add(t);
+        for (const t of ids.task) dirTask.add(t);
+      }
+    };
+    walkDir(dir);
+
+    const wantTest = new Set(f.parity_exits.map((p) => p.id));
+    for (const id of dirTest) if (!wantTest.has(id)) errors.push(`${f.feature}: ${rel(dir)} references ${id}, outside its declared parity exits`);
+    for (const id of wantTest) if (!dirTest.has(id)) errors.push(`${f.feature}: ${rel(dir)} never references declared parity exit ${id}`);
+
+    const wantTasks = new Set(f.v2.tasks.map((t) => t.id));
+    const taskSlice = `${f.v2.tasks[0]?.id ?? '?'}..${f.v2.tasks[f.v2.tasks.length - 1]?.id ?? '?'}`;
+    for (const id of dirTask) {
+      if (!wantTasks.has(id)) {
+        errors.push(`${f.feature}: ${rel(dir)} references ${id}, outside its declared task slice ${taskSlice}`);
+      }
+    }
+  }
+}
 
 function main() {
   const write = process.argv.includes('--write');
