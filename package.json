@@ -16,18 +16,21 @@
     "examples/*"
   ],
   "scripts": {
-    "check": "pnpm run check:corpus && pnpm run check:constitution && pnpm run check:ids && pnpm run check:workspaces && pnpm run check:boundaries && pnpm run typecheck && pnpm run test",
+    "check": "pnpm run check:corpus && pnpm run check:constitution && pnpm run check:ids && pnpm run check:workspaces && pnpm run check:boundaries && pnpm run typecheck && pnpm run build && pnpm run check:exports && pnpm run test",
     "check:corpus": "node tools/corpus.mjs",
     "check:constitution": "node tools/constitution.mjs",
     "check:ids": "node tools/v2-ids.mjs",
     "check:workspaces": "node tools/workspaces.mjs",
     "check:boundaries": "node tools/boundaries.mjs",
+    "build": "tsc -b tsconfig.build.json",
+    "check:exports": "node tools/exports.mjs",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "seed:constitution": "node tools/constitution.mjs --write",
     "seed:ledger": "node tools/v2-ids.mjs --write",
     "seed:workspaces": "node tools/workspaces.mjs --write",
-    "seed": "pnpm run seed:ledger && pnpm run seed:workspaces && pnpm run seed:constitution"
+    "seed": "pnpm run seed:ledger && pnpm run seed:workspaces && pnpm run seed:constitution",
+    "clean": "node tools/clean.mjs"
   },
   "devDependencies": {
     "@types/node": "^20.16.11",

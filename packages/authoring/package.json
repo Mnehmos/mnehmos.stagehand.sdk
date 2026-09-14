@@ -18,6 +18,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@stagehand/core": "workspace:*",
     "@stagehand/parser": "workspace:*",
     "@stagehand/registry": "workspace:*",
     "@stagehand/runtime": "workspace:*",

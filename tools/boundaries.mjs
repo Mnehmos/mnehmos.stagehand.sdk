@@ -47,6 +47,7 @@ function main() {
         for (const owner of owners.get(dep) ?? []) if (owner !== ws.name) expected.add(owner);
       }
     }
+    for (const extra of ws.additional_internal_dependencies ?? []) expected.add(extra);
     const actualInternal = deps.filter((d) => d.startsWith('@stagehand/'));
     for (const dep of actualInternal) {
       if (!expected.has(dep)) {

@@ -27,8 +27,16 @@ failure:
 | 3 | `pnpm check:ids` | The v2 identity ranges are a clean partition, every corpus surface has exactly one v2 feature owner, and no live spec reuses a superseded Pass-9 ID. |
 | 4 | `pnpm check:workspaces` | The workspace tree is byte-identical to what `docs/governance/workspaces.json` generates. |
 | 5 | `pnpm check:boundaries` | No core package depends on a renderer, map, model provider, speech, media, DOM, chess, plugin, or example. |
-| 6 | `pnpm typecheck` | `tsc` over every workspace source. |
-| 7 | `pnpm test` | `vitest run`. |
+| 6 | `pnpm typecheck` | `tsc` over every workspace source **and test**, resolving cross-package imports to source. |
+| 7 | `pnpm build` | `tsc -b tsconfig.build.json` — emits `dist/` for every package in dependency order via tsconfig project references. |
+| 8 | `pnpm check:exports` | Every package's declared `exports` targets exist after the build, every `dist/index.d.ts` is present, and every built entry module actually imports. |
+| 9 | `pnpm test` | `vitest run`. |
+
+Why the build is a gate rather than a convenience: `typecheck` resolves workspace imports through
+`tsconfig.json`'s `paths` to **source**, so it cannot notice an undeclared cross-package dependency or
+a declaration-emit problem. `build` resolves through `node_modules` and project references, which
+can. It caught `packages/authoring` importing `@stagehand/core` with no declared edge the first time
+it ran — an error that had been invisible since FEAT-004 landed.
 
 Run it yourself and report what actually ran. Do not claim a gate passed that you did not run,
 and do not weaken a gate to make a change land — the gates are the product's trust boundary
@@ -57,7 +65,7 @@ byte-for-byte:
 |---|---|
 | `.specify/memory/constitution.md` | `pnpm seed:constitution` |
 | `docs/governance/v2-ids.json`, `V2_ID_LEDGER.md` | `pnpm seed:ledger` |
-| Every workspace `package.json`, `tsconfig.json`, `src/index.ts`, `README.md`, and the root `tsconfig.json` | `pnpm seed:workspaces` |
+| Every workspace `package.json`, `tsconfig.json` (including its project references), `src/index.ts`, `README.md`, the root `tsconfig.json`, and `tsconfig.build.json` | `pnpm seed:workspaces` |
 
 Change the declaration (`docs/governance/v2-allocation.json`, `workspaces.json`,
 `boundaries.json`), then re-seed.

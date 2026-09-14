@@ -52,7 +52,7 @@ media, DOM, or domain state (Constitution III). This one is enforced by a gate, 
 
 ## Status
 
-**M0 complete — scaffolding only. No feature behavior is implemented.**
+**Milestones M0, M1 and M2 complete — seven of eighteen features converged.**
 
 - The specification corpus is complete, imported verbatim, and hash-verified on every check.
 - The v2 identity scheme (`FR-168..266`, `TEST-168..229`, `T-019..111`) is reserved and enforced.

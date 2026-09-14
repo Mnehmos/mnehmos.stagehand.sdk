@@ -36,9 +36,9 @@ implemented.**
 | Specification corpus | Complete, imported verbatim, hash-verified (167 live surfaces, 18 features, 167 requirements, 25 API contracts) |
 | Constitution | Active (12 articles, seeded verbatim) |
 | Identity scheme | v2 reserved and enforced (`FR-168..266`, `TEST-168..229`, `T-019..111`) |
-| Workspaces | 14 scaffolded (7 core, 1 compatibility, 5 plugins, 1 example), typechecking, exporting nothing |
-| Gates | 7, all green |
-| Feature implementation | Not started — begins at M1 with FEAT-001 |
+| Workspaces | 14 (7 core, 1 compatibility, 5 plugins, 1 example); 8 implemented, all building to `dist/` |
+| Gates | 9, all green |
+| Features converged | 7 of 18 (FEAT-001..006) — milestones M0, M1, M2 closed |
 
 Milestones and progress: [issue #1](https://github.com/Mnehmos/mnehmos.stagehand.sdk/issues/1).
 
@@ -65,9 +65,9 @@ pnpm install
 pnpm check          # the only definition of "green"
 ```
 
-`pnpm check` runs seven gates: corpus integrity and consistency, constitution verbatim, v2
-identity ledger, workspace tree byte-equality, core-headless dependency closure, typecheck, and
-tests.
+`pnpm check` runs nine gates: corpus integrity and consistency, constitution verbatim, v2 identity
+ledger, workspace tree byte-equality, core-headless dependency closure, typecheck, build, package
+export validation, and tests.
 
 Then read `AGENTS.md` (operating model and boundaries), `PROJECT_CONTEXT.md` (what this is and the
 constraints that must not bend), and `docs/governance/SPEC_KIT_RUNBOOK.md` (the per-feature

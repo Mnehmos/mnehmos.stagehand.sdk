@@ -1,5 +1,6 @@
 {
   "$comment": "Declarative workspace skeleton from docs/corpus/31_REBUILD_PLAN.md. tools/workspaces.mjs materialises it; tools/boundaries.mjs derives the dependency graph from owner_features via docs/governance/v2-ids.json, so internal dependency edges are never hand-maintained.",
+  "$additional_internal_dependencies": "Escape hatch for an edge the feature graph cannot express: two packages owned by the SAME feature, where one imports the other. Feature dependencies cannot be self-referential, so `packages/authoring` depending on `packages/core` (both owned by FEAT-004) is invisible to the derivation. Found by the build pipeline, not by the boundary gate — the gate checked declarations, and the declaration was missing.",
   "root": {
     "packageManager": "pnpm@10.7.0",
     "node": ">=20.11.0",
@@ -60,6 +61,7 @@
       "layer": "core",
       "kind": "package",
       "owner_features": ["FEAT-004", "FEAT-011"],
+      "additional_internal_dependencies": ["@stagehand/core"],
       "description": "Author-facing helpers: capability introspection digests, receipt linting, and choreography authoring types."
     },
     {
