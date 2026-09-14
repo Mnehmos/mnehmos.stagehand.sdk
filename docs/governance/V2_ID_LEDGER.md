@@ -317,6 +317,25 @@ recorded for a reason given below.
 
 **Enforced by.** human review; no mechanical gate, recorded so the ambiguity is not re-litigated.
 
+## Divergences introduced by this implementation
+
+`DIV-001..DIV-009` are normative and frozen in `docs/corpus/33_DIVERGENCE_REGISTER.md`.
+The following were introduced by the implementation and are declared in
+`docs/governance/divergences.json`; `pnpm check:ids` fails on a spec that cites an
+uncatalogued divergence.
+
+### DIV-010 · Withhold control-shaped tokens in a recovered region instead of narrating them
+
+**Feature.** FEAT-001 (introduced by FEAT-002 integration)
+
+**Decision.** In a narration region that contains a registered action, every `key=value` token is withheld from the narration channel and recorded on the recovered command (declared key or not), rather than being spoken when it falls outside the contiguous kwargs run.
+
+**Rationale.** The reconstructed reference implementation recovers a bare command by consuming contiguous assignments, then narrates everything after the first non-assignment token. For `whiteboard.text id=t text=If exactly one split size=lg` that narrates `exactly one split size=lg`, putting an assignment into the spoken channel. Constitution Article V is explicit that control-shaped text must never become narration, and Article I forbids raw producer output reaching a public effect. The word-based rule cannot locate the boundary between a multi-word value and resumed narration, so the boundary is not trusted: anything shaped like an assignment is withheld.
+
+**Parity note.** Diverges from docs/corpus/harness/stagehand-conformance.mjs case A-002 only in the disposition of tokens *after* the recovered command's kwargs run. A-002's assertions (`commands[0].action === 'avatar.move'`, `text === 'Hello student'`) still hold: the trailing narration there contains no assignment. Recorded and surfaced on the recovered command rather than dropped, so the registry reports `Unknown keyword argument` and the token stays visible in the production channel instead of vanishing (Article XII).
+
+**Covered by.** TEST-169
+
 ## Remaining open items
 
 Not resolvable from the corpus or from engineering judgement.

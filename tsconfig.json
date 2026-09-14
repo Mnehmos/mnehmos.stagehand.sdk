@@ -6,85 +6,85 @@
     "baseUrl": ".",
     "paths": {
       "@stagehand/core": [
-        "packages/core/src"
+        "packages/core/src/index.ts"
       ],
       "@stagehand/core/*": [
         "packages/core/src/*"
       ],
       "@stagehand/parser": [
-        "packages/parser/src"
+        "packages/parser/src/index.ts"
       ],
       "@stagehand/parser/*": [
         "packages/parser/src/*"
       ],
       "@stagehand/registry": [
-        "packages/registry/src"
+        "packages/registry/src/index.ts"
       ],
       "@stagehand/registry/*": [
         "packages/registry/src/*"
       ],
       "@stagehand/runtime": [
-        "packages/runtime/src"
+        "packages/runtime/src/index.ts"
       ],
       "@stagehand/runtime/*": [
         "packages/runtime/src/*"
       ],
       "@stagehand/trace": [
-        "packages/trace/src"
+        "packages/trace/src/index.ts"
       ],
       "@stagehand/trace/*": [
         "packages/trace/src/*"
       ],
       "@stagehand/readiness": [
-        "packages/readiness/src"
+        "packages/readiness/src/index.ts"
       ],
       "@stagehand/readiness/*": [
         "packages/readiness/src/*"
       ],
       "@stagehand/authoring": [
-        "packages/authoring/src"
+        "packages/authoring/src/index.ts"
       ],
       "@stagehand/authoring/*": [
         "packages/authoring/src/*"
       ],
       "@stagehand/compatibility-llm-chess": [
-        "packages/compatibility/llm-chess/src"
+        "packages/compatibility/llm-chess/src/index.ts"
       ],
       "@stagehand/compatibility-llm-chess/*": [
         "packages/compatibility/llm-chess/src/*"
       ],
       "@stagehand/plugin-whiteboard": [
-        "plugins/whiteboard/src"
+        "plugins/whiteboard/src/index.ts"
       ],
       "@stagehand/plugin-whiteboard/*": [
         "plugins/whiteboard/src/*"
       ],
       "@stagehand/plugin-geo-clio": [
-        "plugins/geo-clio/src"
+        "plugins/geo-clio/src/index.ts"
       ],
       "@stagehand/plugin-geo-clio/*": [
         "plugins/geo-clio/src/*"
       ],
       "@stagehand/plugin-classroom": [
-        "plugins/classroom/src"
+        "plugins/classroom/src/index.ts"
       ],
       "@stagehand/plugin-classroom/*": [
         "plugins/classroom/src/*"
       ],
       "@stagehand/plugin-chess": [
-        "plugins/chess/src"
+        "plugins/chess/src/index.ts"
       ],
       "@stagehand/plugin-chess/*": [
         "plugins/chess/src/*"
       ],
       "@stagehand/plugin-dom-presenter": [
-        "plugins/dom-presenter/src"
+        "plugins/dom-presenter/src/index.ts"
       ],
       "@stagehand/plugin-dom-presenter/*": [
         "plugins/dom-presenter/src/*"
       ],
       "@stagehand/example-virtual-classroom-host": [
-        "examples/virtual-classroom-host/src"
+        "examples/virtual-classroom-host/src/index.ts"
       ],
       "@stagehand/example-virtual-classroom-host/*": [
         "examples/virtual-classroom-host/src/*"

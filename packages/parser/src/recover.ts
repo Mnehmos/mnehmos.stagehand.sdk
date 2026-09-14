@@ -27,6 +27,20 @@ import type { CommandSegment, SchemaLookup, TextSegment } from './types.js';
 export const RECOVERED_RAW_PREFIX = '<recovered:';
 
 /**
+ * A token is control-shaped when it is a `key=value` assignment.
+ *
+ * This is deliberately lexical. Deciding whether the *key* is meaningful would require meaning,
+ * and DIV-004 confines recovery to framing. Whether the key is declared is a question for the
+ * registry, and the answer arrives as an `Unknown keyword argument` rejection rather than as a
+ * judgement made here.
+ */
+const CONTROL_SHAPED = /^[A-Za-z_][A-Za-z0-9_.-]*=/;
+
+function isControlShaped(token: string): boolean {
+  return CONTROL_SHAPED.test(token);
+}
+
+/**
  * Determine whether a text region contains any registered action word.
  *
  * Cheap and conservative: this is only a gate for whether the expensive recovery pass runs.
@@ -55,6 +69,8 @@ export function quarantineBareCommands(text: string, lookup: SchemaLookup): Roug
   const words = text.trim().split(/\s+/);
   const out: RoughSegment[] = [];
   const spoken: string[] = [];
+  /** Control-shaped tokens seen before any command was recovered. */
+  let pending: Record<string, string> = {};
 
   const flushSpoken = (): void => {
     const content = spoken.join(' ').trim();
@@ -62,59 +78,80 @@ export function quarantineBareCommands(text: string, lookup: SchemaLookup): Roug
     spoken.length = 0;
   };
 
+  const asCommand = (action: string, args: readonly string[], kwargs: Record<string, string>): RoughSegment => ({
+    type: 'command',
+    action,
+    args: [...args],
+    kwargs,
+    raw: `${RECOVERED_RAW_PREFIX}${action}>`,
+  });
+
   let i = 0;
   while (i < words.length) {
     const word = words[i];
     if (word === undefined) break;
     const schema = lookup(word);
 
-    if (schema === undefined || schema === null) {
-      spoken.push(word);
+    if (schema !== undefined && schema !== null) {
+      flushSpoken();
+      const action = word;
+      i++;
+
+      const args: string[] = [];
+      const maxArgs = schema.maxArgs ?? 0;
+      while (
+        i < words.length &&
+        args.length < maxArgs &&
+        !isControlShaped(words[i]!) &&
+        lookup(words[i]!) === undefined
+      ) {
+        args.push(words[i]!);
+        i++;
+      }
+
+      // Contiguous assignments belong to this command, declared key or not. An undeclared key is
+      // recorded rather than discarded so the registry can reject it visibly — a silently dropped
+      // token is a swallowed validation error (Article XII).
+      const kwargs: Record<string, string> = { ...pending };
+      pending = {};
+      while (i < words.length && isControlShaped(words[i]!)) {
+        const at = words[i]!.indexOf('=');
+        kwargs[words[i]!.slice(0, at)] = words[i]!.slice(at + 1);
+        i++;
+      }
+
+      out.push(asCommand(action, args, kwargs));
+      continue;
+    }
+
+    if (isControlShaped(word)) {
+      // Control-shaped text with no action in scope. It must not be spoken (Article V), so it is
+      // held for the next recovered command, or attached to the last one if the region ends first.
+      const at = word.indexOf('=');
+      const key = word.slice(0, at);
+      const value = word.slice(at + 1);
+      const last = out[out.length - 1];
+      if (last !== undefined && last.type === 'command') {
+        out[out.length - 1] = { ...last, kwargs: { ...last.kwargs, [key]: value } };
+      } else {
+        pending[key] = value;
+      }
       i++;
       continue;
     }
 
-    flushSpoken();
-    const action = word;
+    spoken.push(word);
     i++;
+  }
 
-    const args: string[] = [];
-    const maxArgs = schema.maxArgs ?? 0;
-    while (
-      i < words.length &&
-      args.length < maxArgs &&
-      !words[i]!.includes('=') &&
-      lookup(words[i]!) === undefined
-    ) {
-      args.push(words[i]!);
-      i++;
-    }
-
-    const allowed = new Set<string>([
-      ...(schema.requiredKwargs ?? []),
-      ...Object.keys(schema.optionalKwargs ?? {}),
-    ]);
-    const kwargs: Record<string, string> = {};
-    while (i < words.length && words[i]!.includes('=')) {
-      const [key, ...rest] = words[i]!.split('=');
-      if (key === undefined || !allowed.has(key)) break;
-      kwargs[key] = rest.join('=');
-      i++;
-    }
-
-    const command: CommandSegment = {
-      type: 'command',
-      action,
-      args,
-      kwargs,
-      raw: `${RECOVERED_RAW_PREFIX}${action}>`,
-    };
-    out.push(command);
-
-    // Text after a recovered command is narration until the next registered action.
-    while (i < words.length && lookup(words[i]!) === undefined) {
-      spoken.push(words[i]!);
-      i++;
+  // Control-shaped tokens that never found a command, in a region where one certainly exists.
+  if (Object.keys(pending).length > 0) {
+    const last = out[out.length - 1];
+    if (last !== undefined && last.type === 'command') {
+      out[out.length - 1] = { ...last, kwargs: { ...last.kwargs, ...pending } };
+    } else {
+      flushSpoken();
+      out.push(asCommand(Object.keys(pending)[0] ?? '__quarantined__', [], pending));
     }
   }
 

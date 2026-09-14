@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CORPUS = path.join(ROOT, 'docs/corpus');
 const ALLOCATION = path.join(ROOT, 'docs/governance/v2-allocation.json');
+const DIVERGENCES = path.join(ROOT, 'docs/governance/divergences.json');
 const OUT_JSON = path.join(ROOT, 'docs/governance/v2-ids.json');
 const OUT_MD = path.join(ROOT, 'docs/governance/V2_ID_LEDGER.md');
 
@@ -118,7 +119,7 @@ function build(alloc, rows, parity) {
   });
 }
 
-function verify(alloc, ledger, rows, parity, { enforceLiveSpecs }) {
+function verify(alloc, ledger, rows, parity, { enforceLiveSpecs, divergences = {} }) {
   const errors = [];
   const bounds = alloc.bounds;
 
@@ -238,12 +239,38 @@ function verify(alloc, ledger, rows, parity, { enforceLiveSpecs }) {
 
     // DR-001: ranges are reserved from M0, defined per feature, and enforced once defined.
     verifyLiveSpecCoverage(alloc, errors);
+
+    // Article X: a live spec may cite a corpus divergence or one introduced by the implementation,
+    // but not one that does not exist. An uncatalogued behavioural change is an undocumented one.
+    const known = new Set([
+      ...(divergences.corpus_divergences?.ids ?? []),
+      ...(divergences.live_divergences ?? []).map((d) => d.id),
+    ]);
+    const cited = new Set();
+    const collectDivs = (dir) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const p = path.join(dir, entry.name);
+        if (entry.isDirectory()) { collectDivs(p); continue; }
+        if (!/\.(md|json|ya?ml)$/.test(entry.name)) continue;
+        for (const m of read(p).matchAll(/\bDIV-(\d{3})\b/g)) cited.add(`DIV-${m[1]}`);
+      }
+    };
+    if (fs.existsSync(specsDir)) {
+      for (const entry of fs.readdirSync(specsDir, { withFileTypes: true })) {
+        if (entry.isDirectory()) collectDivs(path.join(specsDir, entry.name));
+      }
+    }
+    for (const id of cited) {
+      if (!known.has(id)) {
+        errors.push(`${id} is cited by a live spec but appears in no divergence register`);
+      }
+    }
   }
 
   return errors;
 }
 
-function renderMarkdown(alloc, ledger) {
+function renderMarkdown(alloc, ledger, divergences = {}) {
   const b = alloc.bounds;
   const L = [];
   L.push('# Canonical v2 ID Ledger');
@@ -325,6 +352,35 @@ function renderMarkdown(alloc, ledger) {
     L.push('');
     L.push(`**Enforced by.** ${d.enforced_by}`);
     L.push('');
+  }
+  L.push('## Divergences introduced by this implementation');
+  L.push('');
+  L.push(`\`DIV-001..DIV-009\` are normative and frozen in \`docs/corpus/33_DIVERGENCE_REGISTER.md\`.`);
+  L.push('The following were introduced by the implementation and are declared in');
+  L.push('`docs/governance/divergences.json`; `pnpm check:ids` fails on a spec that cites an');
+  L.push('uncatalogued divergence.');
+  L.push('');
+  const live = divergences.live_divergences ?? [];
+  if (live.length === 0) {
+    L.push('_None yet._');
+    L.push('');
+  } else {
+    for (const d of live) {
+      L.push(`### ${d.id} · ${d.title}`);
+      L.push('');
+      L.push(`**Feature.** ${d.feature}${d.introduced_by === undefined ? '' : ` (introduced by ${d.introduced_by})`}`);
+      L.push('');
+      L.push(`**Decision.** ${d.decision}`);
+      L.push('');
+      L.push(`**Rationale.** ${d.rationale}`);
+      L.push('');
+      L.push(`**Parity note.** ${d.parity_note}`);
+      L.push('');
+      if ((d.tests ?? []).length > 0) {
+        L.push(`**Covered by.** ${d.tests.join(', ')}`);
+        L.push('');
+      }
+    }
   }
   L.push('## Remaining open items');
   L.push('');
@@ -454,8 +510,9 @@ function main() {
   const rows = parseForwardMatrix();
   const parity = parseParitySuite();
   const ledger = build(alloc, rows, parity);
+  const divergences = fs.existsSync(DIVERGENCES) ? JSON.parse(read(DIVERGENCES)) : {};
 
-  const errors = verify(alloc, ledger, rows, parity, { enforceLiveSpecs: true });
+  const errors = verify(alloc, ledger, rows, parity, { enforceLiveSpecs: true, divergences });
 
   // unmapped spec dirs are a real gap, not a nicety
   for (const f of alloc.features) {
@@ -480,7 +537,7 @@ function main() {
       features: ledger,
     };
     fs.writeFileSync(OUT_JSON, JSON.stringify(doc, null, 2) + '\n');
-    fs.writeFileSync(OUT_MD, renderMarkdown(alloc, ledger));
+    fs.writeFileSync(OUT_MD, renderMarkdown(alloc, ledger, divergences));
     console.log(JSON.stringify({ status: 'WROTE', json: rel(OUT_JSON), markdown: rel(OUT_MD), counts: doc.counts }, null, 2));
     return;
   }

@@ -1,0 +1,30 @@
+{
+  "$comment": "Divergences introduced by the implementation, beyond the reconstructed reference. DIV-001..DIV-009 are normative and live in the frozen corpus register (docs/corpus/33_DIVERGENCE_REGISTER.md); they are listed here read-only so a spec can reference either range and the gate can check it. Constitution Article X: a change that alters recovered behavior preserves the governing test or introduces an explicit DIV with rationale and a parity note.",
+  "corpus_divergences": {
+    "range": "DIV-001..DIV-009",
+    "source": "docs/corpus/33_DIVERGENCE_REGISTER.md",
+    "ids": [
+      "DIV-001",
+      "DIV-002",
+      "DIV-003",
+      "DIV-004",
+      "DIV-005",
+      "DIV-006",
+      "DIV-007",
+      "DIV-008",
+      "DIV-009"
+    ]
+  },
+  "live_divergences": [
+    {
+      "id": "DIV-010",
+      "title": "Withhold control-shaped tokens in a recovered region instead of narrating them",
+      "feature": "FEAT-001",
+      "introduced_by": "FEAT-002 integration",
+      "decision": "In a narration region that contains a registered action, every `key=value` token is withheld from the narration channel and recorded on the recovered command (declared key or not), rather than being spoken when it falls outside the contiguous kwargs run.",
+      "rationale": "The reconstructed reference implementation recovers a bare command by consuming contiguous assignments, then narrates everything after the first non-assignment token. For `whiteboard.text id=t text=If exactly one split size=lg` that narrates `exactly one split size=lg`, putting an assignment into the spoken channel. Constitution Article V is explicit that control-shaped text must never become narration, and Article I forbids raw producer output reaching a public effect. The word-based rule cannot locate the boundary between a multi-word value and resumed narration, so the boundary is not trusted: anything shaped like an assignment is withheld.",
+      "parity_note": "Diverges from docs/corpus/harness/stagehand-conformance.mjs case A-002 only in the disposition of tokens *after* the recovered command's kwargs run. A-002's assertions (`commands[0].action === 'avatar.move'`, `text === 'Hello student'`) still hold: the trailing narration there contains no assignment. Recorded and surfaced on the recovered command rather than dropped, so the registry reports `Unknown keyword argument` and the token stays visible in the production channel instead of vanishing (Article XII).",
+      "tests": ["TEST-169"]
+    }
+  ]
+}

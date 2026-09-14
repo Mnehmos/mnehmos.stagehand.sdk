@@ -151,7 +151,10 @@ function renderReadme(ws, ledger, internalDeps) {
 function renderRootTsconfig(workspaces) {
   const paths = {};
   for (const ws of workspaces) {
-    paths[ws.name] = [`${ws.dir}/src`];
+    // Point at the entry module explicitly rather than the directory: with NodeNext resolution a
+    // bare directory target is ambiguous, and this keeps `tsc` working before `pnpm install` has
+    // linked the workspace packages.
+    paths[ws.name] = [`${ws.dir}/src/index.ts`];
     paths[`${ws.name}/*`] = [`${ws.dir}/src/*`];
   }
   const doc = {

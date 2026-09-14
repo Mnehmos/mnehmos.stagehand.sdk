@@ -83,6 +83,65 @@ describe('TEST-169 / lost brackets (the VC incident)', () => {
   });
 });
 
+describe('TEST-169 / control-shaped tokens inside a recovered region', () => {
+  // Constitution Article V states it plainly: control-shaped text must never become narration. A
+  // word-based recovery cannot always tell where a multi-word value ends and narration resumes, so
+  // rather than trust that boundary, every `key=value` token in a recovered region is withheld from
+  // narration and recorded on the command — where the registry rejects it visibly.
+
+  it('does not narrate an assignment that trails a recovered multi-word value', () => {
+    const segments = parseScript('whiteboard.text id=t text=If exactly one split size=lg', {
+      lookupSchema: lookup,
+    });
+    const { narration, commands } = splitChannels(segments);
+    const spoken = narration.join(' ');
+    expect(spoken).not.toContain('size=lg');
+    expect(spoken).not.toContain('=');
+    // The trailing assignment is recorded, not dropped: it stays visible to the registry.
+    expect(commands[0]?.kwargs['size']).toBe('lg');
+  });
+
+  it('withholds an undeclared assignment rather than speaking it', () => {
+    const { narration, commands } = splitChannels(
+      parseScript('map.focus id=venice sneaky=payload all done', { lookupSchema: lookup }),
+    );
+    expect(narration.join(' ')).not.toContain('sneaky=payload');
+    // Recorded so the registry reports "Unknown keyword argument" instead of it vanishing.
+    expect(commands[0]?.kwargs['sneaky']).toBe('payload');
+  });
+
+  it('withholds an assignment appearing before the action word', () => {
+    const { narration, commands } = splitChannels(
+      parseScript('temp=9 map.focus id=venice then prose', { lookupSchema: lookup }),
+    );
+    expect(narration.join(' ')).not.toContain('temp=9');
+    expect(commands[0]?.kwargs['temp']).toBe('9');
+    expect(narration.join(' ')).toContain('then prose');
+  });
+
+  it('never narrates an equals sign from a region containing a registered action', () => {
+    const inputs = [
+      'map.focus id=a x=1 y=2 tail',
+      'whiteboard.text id=t text=hello world size=md extra=z',
+      'avatar.look left speed=run look=up and then words',
+      'a=1 map.focus id=b c=2 d=3',
+    ];
+    for (const input of inputs) {
+      const { narration } = splitChannels(parseScript(input, { lookupSchema: lookup }));
+      expect(narration.join(' '), `assignment narrated for: ${input}`).not.toContain('=');
+    }
+  });
+
+  it('still narrates prose that merely follows a recovered command', () => {
+    const { narration } = splitChannels(
+      parseScript('avatar.move teacher.home speed=stroll Hello students, welcome back.', {
+        lookupSchema: lookup,
+      }),
+    );
+    expect(narration.join(' ')).toBe('Hello students, welcome back.');
+  });
+});
+
 describe('TEST-169 / malformed framing', () => {
   it('treats an unterminated bracket span as control, never narration', () => {
     const narration = assertNoControlInNarration('[map.focus id=venice');

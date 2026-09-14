@@ -76,9 +76,12 @@ as narration"**.
 - **FR-173 · No control leakage.** Control-shaped text MUST NOT be emitted as narration under any
   input, including malformed input. Specifically: an unmatched compound opener MUST degrade to a
   visible command segment rather than being dropped or spoken; an orphan closer MUST be neither
-  executable nor narrated; and unbalanced openers at end of input MUST be unrolled with their
-  opener and children preserved in place, in order.
-  → SURF-163 · DIV-003, DIV-004
+  executable nor narrated; unbalanced openers at end of input MUST be unrolled with their opener
+  and children preserved in place, in order; and in any narration region containing a registered
+  action, a token shaped like an assignment (`key=value`) MUST be withheld from narration and
+  recorded on the recovered command, whatever its key. Recorded rather than discarded, so the
+  registry can reject it visibly.
+  → SURF-163 · DIV-003, DIV-004, DIV-010
 
 - **FR-174 · Typed, terminal syntax errors.** Malformed command syntax MUST raise a typed syntax
   error that carries the offending raw input. An error is terminal for the command that caused it,
@@ -147,6 +150,10 @@ action is registered.
   behavior. This feature implements the hardened baseline.
 - **DIV-004** — Semantic repair is disabled by default. Lexical repair may recover framing;
   meaning-changing guesses require explicit plugin policy.
+- **DIV-010** — Withhold control-shaped tokens in a recovered region instead of narrating them.
+  Introduced by the FEAT-002 integration, when a real registry made the recovery path reachable
+  with vocabularies richer than the fixture it was developed against. Full rationale and parity note
+  in `docs/governance/divergences.json` and `V2_ID_LEDGER.md`.
 
 ## 11. Parity Exits
 
