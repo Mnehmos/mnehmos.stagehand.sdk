@@ -189,24 +189,21 @@ export function validateCommand(
   }
 
   for (const layer of VALIDATION_LAYERS) {
-    let errors: ValidationError[];
-    switch (layer) {
-      case 'syntax':
-        errors = syntaxLayer(command);
-        break;
-      case 'registry':
-        errors = registryLayer(command, registry);
-        break;
-      default: {
-        errors = [];
-        for (const stage of byLayer.get(layer) ?? []) {
-          const produced = stage.validate(command, context) ?? [];
-          if (produced.length > 0) {
-            errors = [...errors, ...produced];
-            break; // one rejecting stage is enough; later stages in this layer do not run
-          }
+    // A layer's built-in rules run first, then any contributed stages for that layer. `syntax` has no
+    // contributed stages by construction; `registry` does — a plugin owning a command family may need
+    // cross-field rules over its own actions, and the pinned source fails those at the registry layer
+    // rather than later.
+    let errors: ValidationError[] = [];
+    if (layer === 'syntax') errors = syntaxLayer(command);
+    if (layer === 'registry') errors = registryLayer(command, registry);
+
+    if (errors.length === 0) {
+      for (const stage of byLayer.get(layer) ?? []) {
+        const produced = stage.validate(command, context) ?? [];
+        if (produced.length > 0) {
+          errors = [...errors, ...produced];
+          break; // one rejecting stage is enough; later stages in this layer do not run
         }
-        break;
       }
     }
 

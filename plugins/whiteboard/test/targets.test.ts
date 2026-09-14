@@ -14,7 +14,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { boardResolutionStage, isTargetAction, resolveTarget, TARGET_ACTIONS, WhiteboardPlugin } from '../src/index.js';
+import { activeElements, boardResolutionStage, isTargetAction, resolveTarget, TARGET_ACTIONS, WhiteboardPlugin } from '../src/index.js';
 
 function seeded(): WhiteboardPlugin {
   const plugin = new WhiteboardPlugin();
@@ -99,12 +99,12 @@ describe('TEST-207 / a rejected command leaves the revision alone', () => {
     const errors = stageFor(plugin).validate(targetCommand('whiteboard.erase', 'ghost'), {});
     expect(errors).toHaveLength(1);
     expect(plugin.revision).toBe(before);
-    expect(plugin.document.elements).toHaveLength(2);
+    expect(activeElements(plugin.document)).toHaveLength(2);
   });
 
   it('keeps both elements when an erase names an unknown target and is not applied', () => {
     const plugin = seeded();
-    expect(plugin.document.elements.map((e) => e.id)).toEqual(['e1', 'e2']);
+    expect(activeElements(plugin.document).map((e) => e.id)).toEqual(['e1', 'e2']);
   });
 });
 
@@ -114,16 +114,16 @@ describe('TEST-207 / the three target actions do different things to the same el
     // element." So the element's own entry must be byte-identical afterwards, and the mark must sit
     // on the thinking layer linked to its target.
     const plugin = seeded();
-    const before = plugin.document.elements.find((element) => element.id === 'e1');
+    const before = activeElements(plugin.document).find((element) => element.id === 'e1');
 
     plugin.commit([
       { plugin: 'whiteboard', action: 'whiteboard.highlight', payload: { args: [], kwargs: { target: 'e1' }, refs: [] } },
     ]);
 
-    const after = plugin.document.elements.find((element) => element.id === 'e1');
+    const after = activeElements(plugin.document).find((element) => element.id === 'e1');
     expect(after).toEqual(before);
 
-    const mark = plugin.document.elements.find((element) => element.kind === 'highlight');
+    const mark = activeElements(plugin.document).find((element) => element.kind === 'highlight');
     expect(mark?.layer).toBe('thinking');
     expect(mark?.attributes['target']).toBe('e1');
   });
@@ -137,7 +137,7 @@ describe('TEST-207 / the three target actions do different things to the same el
     };
     highlight('yellow');
     highlight('cyan');
-    const marks = plugin.document.elements.filter((element) => element.kind === 'highlight');
+    const marks = activeElements(plugin.document).filter((element) => element.kind === 'highlight');
     // The mark id is derived from the target, so a second highlight is the same mark re-written.
     expect(marks).toHaveLength(1);
     expect(marks[0]?.attributes['color']).toBe('cyan');
@@ -148,20 +148,42 @@ describe('TEST-207 / the three target actions do different things to the same el
     plugin.commit([
       { plugin: 'whiteboard', action: 'whiteboard.erase', payload: { args: [], kwargs: { target: 'e1' }, refs: [] } },
     ]);
-    expect(plugin.document.elements.map((e) => e.id)).toEqual(['e2']);
+    expect(activeElements(plugin.document).map((e) => e.id)).toEqual(['e2']);
   });
 
-  it('reveal keeps the element and flips its concealed attribute', () => {
+  it('reveal arms reveal timing rather than flipping an invented attribute', () => {
+    // The pinned reducer sets `{ reveal: 0, revealMs }` on the target and the render loop advances it.
+    // An earlier version flipped a `concealed` attribute — and built the fixture with a `concealed`
+    // *kwarg*, which is not the recovered public kwarg (`conceal`), so the test could pass on a payload
+    // no producer could send through the registry.
     const plugin = seeded();
     plugin.commit([
-      { plugin: 'whiteboard', action: 'whiteboard.text', payload: { args: [], kwargs: { id: 'hidden', text: 'answer', concealed: 'true' }, refs: [] } },
+      { plugin: 'whiteboard', action: 'whiteboard.text', payload: { args: [], kwargs: { id: 'hidden', text: 'answer', conceal: 'true' }, refs: [] } },
+    ]);
+    expect(activeElements(plugin.document).find((element) => element.id === 'hidden')?.concealed).toBe(true);
+
+    plugin.commit([
+      { plugin: 'whiteboard', action: 'whiteboard.reveal', payload: { args: [], kwargs: { target: 'hidden', duration: '1200' }, refs: [] } },
+    ]);
+
+    const revealed = activeElements(plugin.document).find((element) => element.id === 'hidden');
+    expect(revealed?.reveal).toBe(0);
+    expect(revealed?.revealMs).toBe(1200);
+    expect(revealed?.content).toBe('answer');
+  });
+
+  it('advances reveal progress towards completion', () => {
+    const plugin = seeded();
+    plugin.commit([
+      { plugin: 'whiteboard', action: 'whiteboard.text', payload: { args: [], kwargs: { id: 'r', text: 'x' }, refs: [] } },
     ]);
     plugin.commit([
-      { plugin: 'whiteboard', action: 'whiteboard.reveal', payload: { args: [], kwargs: { target: 'hidden' }, refs: [] } },
+      { plugin: 'whiteboard', action: 'whiteboard.reveal', payload: { args: [], kwargs: { target: 'r', duration: '1000' }, refs: [] } },
     ]);
-    const revealed = plugin.document.elements.find((element) => element.id === 'hidden');
-    expect(revealed?.attributes['concealed']).toBe('false');
-    expect(revealed?.content).toBe('answer');
+    plugin.advance(250);
+    expect(activeElements(plugin.document).find((element) => element.id === 'r')?.reveal).toBeCloseTo(0.25, 5);
+    plugin.advance(2000);
+    expect(activeElements(plugin.document).find((element) => element.id === 'r')?.reveal).toBe(1);
   });
 
   it('erasing a target removes marks linked to it', () => {
@@ -171,13 +193,13 @@ describe('TEST-207 / the three target actions do different things to the same el
     plugin.commit([
       { plugin: 'whiteboard', action: 'whiteboard.highlight', payload: { args: [], kwargs: { target: 'e1' }, refs: [] } },
     ]);
-    expect(plugin.document.elements.some((element) => element.kind === 'highlight')).toBe(true);
+    expect(activeElements(plugin.document).some((element) => element.kind === 'highlight')).toBe(true);
 
     plugin.commit([
       { plugin: 'whiteboard', action: 'whiteboard.erase', payload: { args: [], kwargs: { target: 'e1' }, refs: [] } },
     ]);
-    expect(plugin.document.elements.map((element) => element.id)).toEqual(['e2']);
-    expect(plugin.document.elements.some((element) => element.attributes['target'] === 'e1')).toBe(false);
+    expect(activeElements(plugin.document).map((element) => element.id)).toEqual(['e2']);
+    expect(activeElements(plugin.document).some((element) => element.attributes['target'] === 'e1')).toBe(false);
   });
 
   it('a second erase of the same element no longer resolves', () => {

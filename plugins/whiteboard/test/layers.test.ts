@@ -10,7 +10,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { elementsOn, isLayerEmpty, WhiteboardPlugin } from '../src/index.js';
+import { activeElements, elementsOn, isLayerEmpty, WhiteboardPlugin } from '../src/index.js';
 
 function apply(plugin: WhiteboardPlugin, action: string, kwargs: Record<string, string> = {}): void {
   plugin.commit([{ plugin: 'whiteboard', action, payload: { args: [], kwargs, refs: [] } }]);
@@ -32,18 +32,28 @@ describe('TEST-205 / scribble commits to the thinking layer', () => {
     expect(thinking[0]?.kind).toBe('scribble');
   });
 
-  it('puts the seven truth-surface creating actions on truth', () => {
+  it('puts the six truth-surface creating actions on truth', () => {
     const plugin = new WhiteboardPlugin();
     apply(plugin, 'whiteboard.text', { id: 't', text: 'x' });
     apply(plugin, 'whiteboard.math', { id: 'm', latex: 'x' });
     apply(plugin, 'whiteboard.line', { id: 'l' });
     apply(plugin, 'whiteboard.box', { id: 'b' });
-    apply(plugin, 'whiteboard.arrow', { id: 'a' });
     apply(plugin, 'whiteboard.dots', { id: 'd', count: '3' });
     apply(plugin, 'whiteboard.shape', { id: 's', shape: 'circle' });
     expect(elementsOn(plugin.document, 'truth').map((element) => element.id).sort())
-      .toEqual(['a', 'b', 'd', 'l', 'm', 's', 't']);
+      .toEqual(['b', 'd', 'l', 'm', 's', 't']);
     expect(elementsOn(plugin.document, 'thinking')).toEqual([]);
+  });
+
+  it('puts arrow on thinking, where the pinned reducer commits it', () => {
+    // "The pinned reducer commits whiteboard.arrow with base('thinking', ...)." An earlier version of
+    // this file asserted arrow belonged to truth, which made the test suite protect a source
+    // contradiction rather than catch it.
+    const plugin = new WhiteboardPlugin();
+    apply(plugin, 'whiteboard.arrow', { id: 'a', x1: '10', y1: '10', x2: '20', y2: '20' });
+    const arrow = plugin.elements.find((element) => element.id === 'a');
+    expect(arrow?.layer).toBe('thinking');
+    expect(elementsOn(plugin.document, 'truth')).toEqual([]);
   });
 
   it('puts marks on thinking: scribble, highlight, and count alike', () => {
@@ -65,7 +75,7 @@ describe('TEST-205 / scribble commits to the thinking layer', () => {
 
   it('records the layer on the element, not on a view', () => {
     const plugin = boardWithBothLayers();
-    for (const element of plugin.document.elements) {
+    for (const element of activeElements(plugin.document)) {
       expect(['truth', 'thinking']).toContain(element.layer);
     }
   });
@@ -90,7 +100,7 @@ describe('TEST-205 / a truth read cannot see thinking content', () => {
     const plugin = boardWithBothLayers();
     const truth = elementsOn(plugin.document, 'truth').length;
     const thinking = elementsOn(plugin.document, 'thinking').length;
-    expect(truth + thinking).toBe(plugin.document.elements.length);
+    expect(truth + thinking).toBe(activeElements(plugin.document).length);
     expect(truth).toBe(2);
     expect(thinking).toBe(1);
   });
@@ -114,13 +124,13 @@ describe('TEST-205 / clearing one layer leaves the other', () => {
   it('clearing all removes both', () => {
     const plugin = boardWithBothLayers();
     apply(plugin, 'whiteboard.clear', { layer: 'all' });
-    expect(plugin.document.elements).toEqual([]);
+    expect(activeElements(plugin.document)).toEqual([]);
   });
 
   it('treats a missing layer as all, so a bare clear still clears', () => {
     const plugin = boardWithBothLayers();
     apply(plugin, 'whiteboard.clear');
-    expect(plugin.document.elements).toEqual([]);
+    expect(activeElements(plugin.document)).toEqual([]);
   });
 
   it('does not resurrect a scribble when the thinking layer is cleared then written to again', () => {
@@ -142,7 +152,7 @@ describe('TEST-205 / the count annotation is a thinking-layer mark over its targ
 
   it('creates a thinking-layer annotation linked to the target', () => {
     const plugin = withCountable();
-    const annotation = plugin.document.elements.find((element) => element.kind === 'count');
+    const annotation = activeElements(plugin.document).find((element) => element.kind === 'count');
     expect(annotation).toBeDefined();
     expect(annotation?.layer).toBe('thinking');
     expect(annotation?.attributes['target']).toBe('tri');
@@ -152,7 +162,7 @@ describe('TEST-205 / the count annotation is a thinking-layer mark over its targ
 
   it('keeps the counting parameters on the annotation', () => {
     const plugin = withCountable();
-    const annotation = plugin.document.elements.find((element) => element.kind === 'count');
+    const annotation = activeElements(plugin.document).find((element) => element.kind === 'count');
     expect(annotation?.attributes['what']).toBe('corners');
     expect(annotation?.attributes['from']).toBe('1');
     expect(annotation?.attributes['pace']).toBe('600');
@@ -162,7 +172,7 @@ describe('TEST-205 / the count annotation is a thinking-layer mark over its targ
     const plugin = withCountable();
     expect(elementsOn(plugin.document, 'thinking')).toHaveLength(1);
     apply(plugin, 'whiteboard.erase', { target: 'tri' });
-    expect(plugin.document.elements).toEqual([]);
+    expect(activeElements(plugin.document)).toEqual([]);
   });
 
   it('is visible to a truth read only as its absence', () => {
@@ -172,7 +182,7 @@ describe('TEST-205 / the count annotation is a thinking-layer mark over its targ
 
   it('does not require the optional id, and names itself from the target when absent', () => {
     const plugin = withCountable();
-    const annotation = plugin.document.elements.find((element) => element.kind === 'count');
+    const annotation = activeElements(plugin.document).find((element) => element.kind === 'count');
     expect(annotation?.id).toBe('count:tri');
   });
 
@@ -180,7 +190,7 @@ describe('TEST-205 / the count annotation is a thinking-layer mark over its targ
     const plugin = new WhiteboardPlugin();
     apply(plugin, 'whiteboard.shape', { id: 'sq', shape: 'square' });
     apply(plugin, 'whiteboard.count', { target: 'sq', id: 'group-1', what: 'sides' });
-    const annotation = plugin.document.elements.find((element) => element.kind === 'count');
+    const annotation = activeElements(plugin.document).find((element) => element.kind === 'count');
     expect(annotation?.id).toBe('group-1');
     expect(annotation?.attributes['target']).toBe('sq');
   });
@@ -189,7 +199,7 @@ describe('TEST-205 / the count annotation is a thinking-layer mark over its targ
     const plugin = new WhiteboardPlugin();
     apply(plugin, 'whiteboard.dots', { id: 'd', count: '7' });
     apply(plugin, 'whiteboard.count', { target: 'd', what: 'items' });
-    const annotation = plugin.document.elements.find((element) => element.kind === 'count');
+    const annotation = activeElements(plugin.document).find((element) => element.kind === 'count');
     expect(annotation?.attributes['what']).toBe('items');
     expect(annotation?.attributes['target']).toBe('d');
   });

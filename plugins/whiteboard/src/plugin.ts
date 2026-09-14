@@ -1,15 +1,21 @@
 /**
- * The whiteboard plugin (FR-228, FR-230, FR-231, FR-234).
+ * The whiteboard plugin: reducer, committer, and the seams a host injects.
  *
- * Owns a `BoardDocument` and turns committed effects into document changes. It provides exactly
- * three things to the core pipeline, none of which is a trust path of its own:
+ * Recovered from the pinned reducer (`src/board/document.ts`), validator (`src/stagehand/validator.ts`)
+ * and runtime (`src/app/runtime.ts`) at `cd7253608297efd57921c965b7440f4d4081842f` — not from the
+ * schema file alone. The behaviors that only the reducer reveals:
  *
- * 1. **Schemas** — the 15 VC-superset actions.
- * 2. **A contributed entity stage** — target and `content_ref` resolution.
- * 3. **A committer** — the adapter that applies accepted effects to its own document.
- *
- * The committer is the only place the revision moves, which is what makes "a rejected command does
- * not advance the revision" true by construction rather than by remembering.
+ * - **`show` has page semantics.** It creates a named page, reopens one with its content intact, and
+ *   updates a title. Accepting those kwargs and discarding them is not parity.
+ * - **A no-op does not advance the revision.** An unknown target, an uncountable source, or a clear
+ *   that wipes nothing leaves the document — and its revision — untouched.
+ * - **`count` computes a total** from the target and `what`, and no-ops when the requested thing is
+ *   not countable rather than numbering zero things.
+ * - **`highlight` expires.** `duration=0` means permanent until cleared, which is why expiry is
+ *   `number | null`.
+ * - **`reveal` carries timing**, starting progress at 0 with a duration, not flipping an invented
+ *   attribute.
+ * - **`content_ref` resolves through an injected lesson-content resolver**, not against the board.
  */
 
 import { CapabilityRegistry } from '@stagehand/registry';
@@ -17,18 +23,22 @@ import { ReadinessGate, type WaitResult } from '@stagehand/readiness';
 import type { CanonicalEffect, EffectCommitter, ValidationStage } from '@stagehand/runtime';
 import type { EventBus } from '@stagehand/trace';
 import { THINKING_ACTIONS, WHITEBOARD_SCHEMAS } from './contracts.js';
-import { boardResolutionStage } from './resolve.js';
+import { boardRegistryStage, boardResolutionStage, NULL_CONTENT_RESOLVER, type ContentResolver } from './resolve.js';
 import {
+  activeElements,
+  activePage,
+  countableTotal,
   elementById,
   EMPTY_BOARD,
+  pageById,
   reduce,
+  type BoardBounds,
   type BoardChange,
   type BoardDocument,
   type BoardElementKind,
   type BoardLayer,
 } from './types.js';
 
-/** Actions that hide rather than clear. Named so the distinction is greppable. */
 const HIDE = 'whiteboard.hide';
 const SHOW = 'whiteboard.show';
 const CLEAR = 'whiteboard.clear';
@@ -52,12 +62,11 @@ const KIND_OF_ACTION: Readonly<Record<string, BoardElementKind>> = {
 };
 
 /**
- * Marks that carry no `id` of their own and are named from the element they annotate.
+ * Marks named from their target rather than from a declared id.
  *
- * `highlight` is the case: the source gives it `target` and no `id`, because a highlight is a mark
- * *over* an element rather than an element in its own right. The id is therefore derived from the
- * target, deterministically, so re-highlighting the same element replaces its mark rather than
- * accumulating one per call.
+ * `highlight` and `count` both annotate an element instead of being one, so their id is derived
+ * deterministically from the target — which makes annotating the same element twice an update rather
+ * than a second mark.
  */
 const MARK_ID_PREFIX: Readonly<Record<string, string>> = {
   [HIGHLIGHT]: 'highlight',
@@ -65,92 +74,64 @@ const MARK_ID_PREFIX: Readonly<Record<string, string>> = {
 };
 
 /**
- * Which layer an action commits to (FR-231).
+ * Preferred content kwarg per action.
  *
- * Derived from the recovered contract table rather than restated here. Three actions produce
- * thinking-surface marks, not one: `scribble` ("thinking-surface marks never become truth-surface
- * content"), `highlight` ("a thinking-surface mark over a truth-surface element"), and `count` (its
- * numbering is an annotation over the counted element). An earlier version of this file treated
- * scribble as the sole exception, which is the kind of quiet simplification the source review caught.
+ * `text`/`math` are absent because their content comes from `content_ref` or the inline kwarg, which
+ * `resolveContent` handles; `count` and `highlight` carry no content at all.
  */
-function layerFor(action: string): BoardLayer {
-  return THINKING_ACTIONS.includes(action) ? 'thinking' : 'truth';
-}
+const CONTENT_KEY: Readonly<Record<string, string>> = {
+  'whiteboard.text': 'text',
+  'whiteboard.math': 'latex',
+  'whiteboard.scribble': 'points',
+  'whiteboard.shape': 'shape',
+  'whiteboard.dots': 'count',
+  'whiteboard.box': 'label',
+  'whiteboard.arrow': 'label',
+};
 
-/**
- * The content a creating action stores.
- *
- * `content_ref` wins where the action declares it: the source says long prose and anything with
- * braces belongs in the reference rather than inline, so the resolved reference *is* the content and
- * is stored byte for byte. Only when there is no reference does the inline kwarg supply it.
- */
-function contentOf(
-  action: string,
-  payload: Readonly<Record<string, unknown>>,
-  resolveRef: (reference: string) => string | undefined,
-): string {
-  const kwargs = payload['kwargs'];
-  if (kwargs === null || typeof kwargs !== 'object') return '';
-  const record = kwargs as Record<string, unknown>;
-
-  const reference = record['content_ref'];
-  if (typeof reference === 'string' && reference !== '') {
-    const resolved = resolveRef(reference);
-    if (resolved !== undefined) return resolved;
-  }
-
-  // Per-action preference, matching what each contract declares as its payload.
-  const preferred: Readonly<Record<string, readonly string[]>> = {
-    'whiteboard.text': ['text'],
-    'whiteboard.math': ['latex'],
-    'whiteboard.scribble': ['points'],
-    'whiteboard.shape': ['shape'],
-    'whiteboard.dots': ['count'],
-    'whiteboard.box': ['label'],
-    'whiteboard.arrow': ['label'],
-    'whiteboard.line': [],
-    'whiteboard.highlight': [],
-    'whiteboard.count': [],
-  };
-  for (const key of preferred[action] ?? []) {
-    const value = record[key];
-    if (typeof value === 'string' && value !== '') return value;
-  }
-  return '';
-}
-
-function attributesOf(payload: Readonly<Record<string, unknown>>): Record<string, string> {
-  const kwargs = payload['kwargs'];
-  if (kwargs === null || typeof kwargs !== 'object') return {};
-  const out: Record<string, string> = {};
-  for (const [key, value] of Object.entries(kwargs as Record<string, unknown>)) {
-    if (typeof value === 'string') out[key] = value;
-  }
-  return out;
-}
-
-/** Options for the board taking ownership of a document. */
 export interface WhiteboardPluginOptions {
-  /** The plugin name stamped on effects and used as the committer's identity. */
   readonly plugin?: string;
-  /** Called after each committed change with the new document. */
   readonly onChange?: (document: BoardDocument, change: BoardChange) => void;
-  /**
-   * Records `board.revision.committed` on the public channel after each committed change.
-   *
-   * The event type is `FEAT-005`'s — the plugin is its producer, not its owner — so the bus's channel
-   * map must carry it, which `ChannelMap.core()` already does.
-   */
+  /** Records `board.revision.committed` on the public channel after each committed change. */
   readonly bus?: EventBus;
-  /**
-   * Readiness gate used to make board targets awaitable.
-   *
-   * A host that wants to issue `[whiteboard.highlight target=e1]` immediately after committing `e1`
-   * should `await plugin.whenReady('e1')` rather than assume the commit has landed. Resolution
-   * against a stale document is rejected rather than guessed, so waiting is the alternative to a
-   * rejection — and `FEAT-006`'s gate is exactly the primitive for it.
-   */
+  /** Makes board targets awaitable. */
   readonly gate?: ReadinessGate;
+  /**
+   * Resolves `content_ref` from the host's lesson content pack.
+   *
+   * Required for `content_ref` to mean anything: the pin resolves through an injected seam, and a
+   * reference the pack does not hold yields empty content rather than a refusal.
+   */
+  readonly resolveContent?: ContentResolver;
+  /** Injected clock, used only for highlight expiry. Defaults to `Date.now`. */
+  readonly clock?: () => number;
+}
+
+/** Bounds a producer's declared coordinates describe, in the recovered 0-100 space. */
+function boundsOf(kwargs: Readonly<Record<string, unknown>>, action: string): BoardBounds {
+  const num = (key: string, fallback: number): number => {
+    const value = Number(kwargs[key]);
+    return Number.isFinite(value) ? value : fallback;
+  };
+  if (action === 'whiteboard.line' || action === 'whiteboard.arrow') {
+    const x1 = num('x1', action === 'whiteboard.arrow' ? 30 : 20);
+    const y1 = num('y1', 50);
+    const x2 = num('x2', action === 'whiteboard.arrow' ? 70 : 80);
+    const y2 = num('y2', 50);
+    return { x: Math.min(x1, x2), y: Math.min(y1, y2), width: Math.abs(x2 - x1), height: Math.abs(y2 - y1) };
+  }
+  if (action === 'whiteboard.box') {
+    const centerX = num('x', 50);
+    const centerY = num('y', 50);
+    const width = num('width', 28);
+    const height = num('height', 18);
+    return { x: centerX - width / 2, y: centerY - height / 2, width, height };
+  }
+  // Point-anchored elements. Automatic placement and collision avoidance are renderer-side in the
+  // pin; the headless contract carries the point and a nominal box around it. See DIV-012.
+  const x = num('x', 50);
+  const y = num('y', 50);
+  return { x, y, width: 0, height: 0 };
 }
 
 export class WhiteboardPlugin implements EffectCommitter {
@@ -159,6 +140,8 @@ export class WhiteboardPlugin implements EffectCommitter {
   readonly #onChange: ((document: BoardDocument, change: BoardChange) => void) | undefined;
   readonly #bus: EventBus | undefined;
   readonly #gate: ReadinessGate | undefined;
+  readonly #resolveContent: ContentResolver;
+  readonly #clock: () => number;
   #document: BoardDocument = EMPTY_BOARD;
 
   constructor(options: WhiteboardPluginOptions = {}) {
@@ -166,15 +149,15 @@ export class WhiteboardPlugin implements EffectCommitter {
     this.#onChange = options.onChange;
     this.#bus = options.bus;
     this.#gate = options.gate;
+    this.#resolveContent = options.resolveContent ?? NULL_CONTENT_RESOLVER;
+    this.#clock = options.clock ?? Date.now;
     this.#registry = new CapabilityRegistry(WHITEBOARD_SCHEMAS);
   }
 
-  /** The plugin's own registry, holding its 15 schemas. */
   get registry(): CapabilityRegistry {
     return this.#registry;
   }
 
-  /** The board as it currently stands. */
   get document(): BoardDocument {
     return this.#document;
   }
@@ -183,110 +166,125 @@ export class WhiteboardPlugin implements EffectCommitter {
     return this.#document.revision;
   }
 
-  /**
-   * The entity-layer stage to hand to `validateCommand` / `executeStagehandCommand`.
-   *
-   * Reads the live document rather than a snapshot, so resolution is always against the current
-   * board: a sequence that commits `e1` and then erases `e1` must see `e1` on the second command.
-   */
+  /** Elements on the active page. */
+  get elements(): readonly import('./types.js').BoardElement[] {
+    return activeElements(this.#document);
+  }
+
+  /** The entity-layer stage to hand to `validateCommand` / `executeStagehandCommand`. */
   get stage(): ValidationStage {
     return boardResolutionStage(() => this.#document);
   }
 
-  /** Convenience: the stages a caller should pass, wrapped so it cannot be forgotten. */
+  /** Both contributed stages, in pipeline order: registry-layer rules, then entity resolution. */
   get stages(): readonly ValidationStage[] {
-    return [this.stage];
+    return [boardRegistryStage(), this.stage];
+  }
+
+  /** Resolve a lesson-content reference the way the runtime does. */
+  resolveContent(reference: string): string | undefined {
+    return this.#resolveContent(reference);
   }
 
   /**
-   * Wait until a board element exists, or the deadline elapses.
+   * Stored content for a board element, byte for byte.
    *
-   * @returns `FEAT-006`'s wait result. Check `resumable` rather than `settled`: a barge-in settles
-   *   the gate too, and a caller that treats settled as ready would resolve against a board that a
-   *   superseded turn is still writing.
+   * Read from the element rather than a parallel map: a second copy is a second thing to keep in step,
+   * and the one that goes stale is always the one nobody reads directly.
    */
+  contentFor(elementId: string): string | undefined {
+    return elementById(this.#document, elementId)?.content;
+  }
+
+  /** Wait until a board element exists, or the deadline elapses. */
   async whenReady(elementId: string, deadlineMs?: number): Promise<WaitResult> {
     if (this.#gate === undefined) {
       throw new Error('whenReady requires a readiness gate; pass one in WhiteboardPluginOptions');
     }
-    if (elementById(this.#document, elementId) !== undefined) {
-      return this.#gate.wait([elementId], deadlineMs);
-    }
+    if (elementById(this.#document, elementId) !== undefined) return this.#gate.wait([elementId], deadlineMs);
     this.#gate.mark(elementId);
     return this.#gate.wait([elementId], deadlineMs);
   }
 
   /**
-   * Stored content for a reference, or `undefined`. Byte for byte as committed (FR-232).
+   * Advance reveal progress and retire expired marks.
    *
-   * Read from the element rather than from a parallel map: a second copy is a second thing to keep in
-   * step, and the one that goes stale is always the one nobody reads directly.
+   * Separate from `commit` because the pin drives it from the render loop each frame. A host that
+   * never renders never spends a revision here; one that does gets the same retirement behavior.
    */
-  contentFor(reference: string): string | undefined {
-    return elementById(this.#document, reference)?.content;
+  advance(elapsedMs: number): BoardDocument {
+    const next = reduce(this.#document, { kind: 'advance', deltaMs: elapsedMs }, this.#clock());
+    return this.#adopt(next);
   }
 
   /**
-   * Apply a batch of committed effects (FR-228, FR-230, FR-231, FR-234).
+   * Apply a batch of committed effects.
    *
-   * This is the committer's contract from `EffectCommitter`: it is called at most once per command or
-   * group, only after everything is authorized, and it owns whether its own write lands whole. It
-   * applies the batch in order and advances the revision once per change, so a caller that recorded
-   * the revision before a rejected command will find it unchanged — the rejection never reached here.
+   * Called at most once per command or group, only after everything is authorized. A change that turns
+   * out to be a no-op leaves the document — and the revision — exactly as it was, which is what makes
+   * the revision count changes rather than commands.
    */
   commit(effects: readonly CanonicalEffect[]): void {
     for (const effect of effects) {
       const change = this.#changeFor(effect);
       if (change === undefined) continue;
-      this.#document = reduce(this.#document, change);
-
-      // Reported after the document moved, so a listener reading the plugin sees the new revision
-      // rather than the one it replaced.
-      this.#bus?.emitPublic('board.revision.committed', { revision: this.#document.revision });
-
-      // Settling an unmarked key is harmless (FEAT-006), so a commit needs no matching waiter.
+      const before = this.#document;
+      const next = reduce(before, change, this.#clock());
+      // A mark whose derived id is unchanged still needs its expiry refreshed, which `reduce` reports
+      // as a change; a genuine no-op returns the same reference and is skipped entirely.
+      if (next === before) continue;
+      this.#adopt(next);
+      this.#bus?.emitPublic('board.revision.committed', { revision: next.revision });
       if (change.kind === 'commit') this.#gate?.settle(change.element.id);
-
-      this.#onChange?.(this.#document, change);
+      this.#onChange?.(next, change);
     }
+  }
+
+  #adopt(next: BoardDocument): BoardDocument {
+    this.#document = next;
+    return next;
   }
 
   /** Translate one effect into a document change, or `undefined` for an action with no state effect. */
   #changeFor(effect: CanonicalEffect): BoardChange | undefined {
-    const payload = effect.payload;
-    const kwargs = (payload['kwargs'] ?? {}) as Record<string, unknown>;
+    const kwargs = (effect.payload['kwargs'] ?? {}) as Record<string, unknown>;
+    const str = (key: string): string => (typeof kwargs[key] === 'string' ? (kwargs[key] as string) : '');
 
     switch (effect.action) {
-      case SHOW:
-        return { kind: 'show' };
+      case SHOW: {
+        const page = str('page');
+        const title = str('title');
+        return {
+          kind: 'show',
+          ...(page === '' ? {} : { page }),
+          ...(title === '' ? {} : { title }),
+        };
+      }
       case HIDE:
-        // Occlude. Deliberately its own case rather than falling through to `clear`.
         return { kind: 'hide' };
       case CLEAR: {
-        const layer = kwargs['layer'];
+        const layer = str('layer');
         const selected = layer === 'truth' || layer === 'thinking' || layer === 'all' ? layer : 'all';
         return { kind: 'clear', layer: selected };
       }
       case ERASE: {
-        const target = kwargs['target'];
-        // The reducer also removes marks linked to this element, so a count annotation does not
-        // outlive the thing it numbers.
-        return typeof target === 'string' ? { kind: 'remove', id: target } : undefined;
+        const target = str('target');
+        if (target === '') return undefined;
+        // A no-op when the target is absent: the reducer returns the document unchanged.
+        return { kind: 'remove', id: target };
       }
       case REVEAL: {
-        const target = kwargs['target'];
-        return typeof target === 'string' ? { kind: 'reveal', id: target } : undefined;
+        const target = str('target');
+        if (target === '') return undefined;
+        return { kind: 'reveal', id: target, revealMs: durationOf(kwargs['duration'], 1200) };
       }
       default: {
         const kind = KIND_OF_ACTION[effect.action];
         if (kind === undefined) return undefined;
 
-        // A mark names itself from its target when the contract gives it no `id`: `highlight` and
-        // `count` both annotate an element rather than being one. `count` accepts an optional id for
-        // the annotation group, which wins when supplied.
         const prefix = MARK_ID_PREFIX[effect.action];
-        const target = typeof kwargs['target'] === 'string' ? kwargs['target'] : '';
-        const declaredId = typeof kwargs['id'] === 'string' ? kwargs['id'] : '';
+        const target = str('target');
+        const declaredId = str('id');
 
         let id = declaredId;
         if (id === '' && prefix !== undefined) {
@@ -295,8 +293,81 @@ export class WhiteboardPlugin implements EffectCommitter {
         }
         if (id === '') return undefined;
 
-        const attributes = attributesOf(payload);
-        // Marks are linked to what they annotate, which is how erasing the target cleans them up.
+        const attributes: Record<string, string> = {};
+        for (const [key, value] of Object.entries(kwargs)) {
+          if (typeof value === 'string') attributes[key] = value;
+        }
+
+        const layer: BoardLayer = THINKING_ACTIONS.includes(effect.action) ? 'thinking' : 'truth';
+        const bounds = boundsOf(kwargs, effect.action);
+        const concealed = str('conceal') === 'true';
+
+        if (effect.action === HIGHLIGHT) {
+          // An unknown target is a no-op in the pin, not an error: `if (!target) return doc`.
+          if (elementById(this.#document, target) === undefined) return undefined;
+          const duration = durationOf(kwargs['duration'], 3000);
+          return {
+            kind: 'commit',
+            element: {
+              id,
+              kind,
+              layer,
+              content: '',
+              attributes,
+              bounds: elementById(this.#document, target)?.bounds ?? bounds,
+              targetId: target,
+              // `duration=0` means permanent until cleared, which is a different thing from a very
+              // short duration and needs `null` to say so.
+              expiresAt: duration > 0 ? this.#clock() + duration : null,
+              ...(concealed ? { concealed } : {}),
+            },
+          };
+        }
+
+        if (effect.action === COUNT) {
+          const source = elementById(this.#document, target);
+          if (source === undefined) return undefined;
+          const what = str('what') === '' ? 'items' : str('what');
+          const total = countableTotal(source, what);
+          // Numbering nothing is not a count. The pin no-ops rather than committing an annotation
+          // that numbers zero things.
+          if (total === 0) return undefined;
+          const from = Number.isFinite(Number(kwargs['from'])) ? Math.round(Number(kwargs['from'])) : 1;
+          // Pace is per item, so counting eight things takes twice as long as counting four — which
+          // is what makes it read as counting rather than as a static total.
+          const perItem = durationOf(kwargs['pace'], 600);
+          return {
+            kind: 'commit',
+            element: {
+              id,
+              kind,
+              layer,
+              content: '',
+              attributes: {
+                ...attributes,
+                target: source.id,
+                from: String(from),
+                paceMs: String(perItem),
+                budgetMs: String(Math.max(400, total * perItem)),
+              },
+              bounds: source.bounds,
+              targetId: source.id,
+              total,
+              ...(concealed ? { concealed } : {}),
+            },
+          };
+        }
+
+        // Content: a reference resolves through the injected pack, otherwise the inline kwarg. The
+        // registry stage has already refused a command carrying both.
+        const reference = str('content_ref');
+        const content =
+          reference !== ''
+            ? (this.#resolveContent(reference) ?? '')
+            : CONTENT_KEY[effect.action] !== undefined
+              ? str(CONTENT_KEY[effect.action] as string)
+              : '';
+
         if (prefix !== undefined && target !== '') attributes['target'] = target;
 
         return {
@@ -304,9 +375,13 @@ export class WhiteboardPlugin implements EffectCommitter {
           element: {
             id,
             kind,
-            layer: layerFor(effect.action),
-            content: contentOf(effect.action, payload, (reference) => this.contentFor(reference)),
+            layer,
+            content,
             attributes,
+            bounds,
+            ...(prefix !== undefined && target !== '' ? { targetId: target } : {}),
+            ...(kind === 'dots' ? { count: Math.max(0, Math.round(Number(kwargs['count'] ?? 1)) || 0) } : {}),
+            ...(concealed ? { concealed } : {}),
           },
         };
       }
@@ -314,17 +389,16 @@ export class WhiteboardPlugin implements EffectCommitter {
   }
 }
 
-/**
- * A committer that owns a board and reports its revision (FR-228).
- *
- * Wraps `WhiteboardPlugin` for callers that only need "apply effects and tell me the revision".
- */
-export function whiteboardCommitter(options: WhiteboardPluginOptions = {}): {
-  readonly committer: EffectCommitter;
-  readonly plugin: WhiteboardPlugin;
-} {
-  const plugin = new WhiteboardPlugin(options);
-  return { committer: plugin, plugin };
+/** Parse `2s` / `500ms` / a bare millisecond count, defaulting when absent. */
+function durationOf(raw: unknown, fallback: number): number {
+  if (typeof raw !== 'string' || raw.trim() === '') return fallback;
+  const match = /^([+-]?(?:\d+\.?\d*|\.\d+))\s*(ms|s|m)?$/i.exec(raw.trim());
+  if (match === null) return fallback;
+  const magnitude = Number(match[1]);
+  if (!Number.isFinite(magnitude)) return fallback;
+  const unit = (match[2] ?? 'ms').toLowerCase();
+  const factor = unit === 's' ? 1000 : unit === 'm' ? 60_000 : 1;
+  return magnitude * factor;
 }
 
-export { WHITEBOARD_SCHEMAS };
+export { activePage, pageById };

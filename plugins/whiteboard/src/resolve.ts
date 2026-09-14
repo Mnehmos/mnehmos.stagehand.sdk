@@ -15,6 +15,10 @@ import type { ValidationError, ValidationStage } from '@stagehand/registry';
 import { CREATING_ACTIONS, TARGET_ACTIONS } from './contracts.js';
 import { elementById, type BoardDocument } from './types.js';
 
+/** Board coordinates live in a recovered 0-100 space. */
+export const BOARD_MIN = 0;
+export const BOARD_MAX = 100;
+
 export { CREATING_ACTIONS, TARGET_ACTIONS };
 
 export interface BoardResolution {
@@ -39,19 +43,97 @@ export function resolveTarget(document: BoardDocument, id: string): BoardResolut
 }
 
 /**
- * Resolve a `content_ref` to the board's stored content, **byte for byte** (FR-232).
+ * A lesson-content resolver, injected by the host.
  *
- * The stored string is returned as it was committed. Re-serialising or re-parsing here would produce
- * content that is equivalent and not identical, which is the failure `TEST-206` is written to catch —
- * it compares against what was committed rather than against a literal, so a change in this function
- * cannot make the test agree with the bug.
+ * `content_ref` names a payload in the **lesson content pack**, not another board element. The pinned
+ * runtime injects `opts.resolveContent` and its test resolves `equation.k` through an external pack;
+ * an earlier version of this plugin looked the reference up among the board's own elements, which was
+ * a different protocol wearing the same kwarg.
+ *
+ * Returning `undefined` is the source's behaviour for a reference the pack does not hold: the content
+ * becomes empty, and the element is still committed. That is deliberately *not* a rejection — the
+ * content pack is the host's, and a reference it cannot resolve is the host's problem to surface, not
+ * a reason for the protocol layer to refuse an otherwise valid command.
  */
-export function resolveContentRef(document: BoardDocument, reference: string): string | undefined {
-  return elementById(document, reference)?.content;
+export type ContentResolver = (reference: string) => string | undefined;
+
+/**
+ * The last-resort resolver: resolves nothing.
+ *
+ * Installed so `content_ref` behaves predictably when a host forgets to inject one — every reference
+ * yields empty content rather than throwing at render time.
+ */
+export const NULL_CONTENT_RESOLVER: ContentResolver = () => undefined;
+
+/**
+ * The **registry-layer** stage: cross-field and spatial rules over this plugin's own actions.
+ *
+ * The pinned validator fails these before entity resolution, so they belong in the same layer here
+ * rather than surfacing as an entity-layer failure a producer would read wrongly.
+ */
+export function boardRegistryStage(): ValidationStage {
+  return {
+    layer: 'registry',
+    validate(command): readonly ValidationError[] {
+      const kwargs = command.kwargs;
+      const errors: ValidationError[] = [];
+
+      // "Content is either inline or referenced, never both — otherwise the renderer has to pick a
+      // winner and the trace becomes ambiguous."
+      const contentRef = kwargs['content_ref'];
+      if (
+        contentRef !== undefined &&
+        contentRef !== '' &&
+        ((kwargs['text'] ?? '') !== '' || (kwargs['latex'] ?? '') !== '')
+      ) {
+        errors.push({
+          code: 'E_SCHEMA',
+          layer: 'registry',
+          message: `${command.action}: use content_ref or inline text/latex, not both`,
+        });
+      }
+
+      // "An element placed off the board is valid syntax and invisible teaching."
+      for (const [xKey, yKey] of [['x', 'y'], ['x1', 'y1'], ['x2', 'y2']] as const) {
+        for (const key of [xKey, yKey]) {
+          const raw = kwargs[key];
+          if (raw === undefined || raw === '') continue;
+          const value = Number(raw);
+          if (!Number.isFinite(value)) {
+            errors.push({ code: 'E_SCHEMA', layer: 'registry', message: `${command.action}: ${key}=${raw} is not a number`, subject: key });
+            continue;
+          }
+          if (value < BOARD_MIN || value > BOARD_MAX) {
+            errors.push({
+              code: 'E_SCHEMA',
+              layer: 'registry',
+              message: `${command.action}: ${key}=${raw} is outside the 0-100 board space`,
+              subject: key,
+            });
+          }
+        }
+      }
+
+      const width = Number(kwargs['width']);
+      const centerX = Number(kwargs['x']);
+      if (Number.isFinite(width) && Number.isFinite(centerX)) {
+        if (centerX - width / 2 < BOARD_MIN || centerX + width / 2 > BOARD_MAX) {
+          errors.push({
+            code: 'E_SCHEMA',
+            layer: 'registry',
+            message: `${command.action}: box spans past the board edge horizontally`,
+            subject: 'width',
+          });
+        }
+      }
+
+      return errors;
+    },
+  };
 }
 
 /**
- * The entity-layer stage this plugin contributes.
+ * The entity-layer stage: board target resolution.
  *
  * @param read A reader over the current board state. Called per command, so the stage always resolves
  *   against the board as it is *now* rather than against a snapshot taken at registration.
@@ -64,17 +146,33 @@ export function boardResolutionStage(read: () => BoardDocument): ValidationStage
     // dependency closure is the feature graph's, not whatever a type annotation happens to need.
     validate(command): readonly ValidationError[] {
       const document = read();
+      const kwargs = command.kwargs;
       const errors: ValidationError[] = [];
 
+      // "if (schema.resolvesEntity) { const ref = kwargs.target ?? args[0]; if (!ref) fail(...) }" —
+      // the target may arrive as the first positional argument, which an earlier version of this stage
+      // ignored.
       if (TARGET_ACTIONS.includes(command.action)) {
-        const target = command.kwargs['target'];
-        if (target !== undefined && target !== '') errors.push(...resolveTarget(document, target).errors);
+        const target = kwargs['target'] ?? command.args[0];
+        if (target === undefined || target === '') {
+          errors.push({
+            code: 'E_UNRESOLVED_REF',
+            layer: 'entity',
+            message: `${command.action} requires a board target`,
+            subject: 'target',
+          });
+        } else {
+          errors.push(...resolveTarget(document, target).errors);
+        }
       }
 
+      // `whiteboard.scribble` takes an optional `target` its schema does not declare as an entity, and
+      // the pinned reducer *falls back* when it cannot be found rather than refusing. An earlier
+      // version rejected an unknown scribble target, which was a behaviour change presented as parity.
       if (CREATING_ACTIONS.includes(command.action)) {
-        const id = command.kwargs['id'];
-        // A commit that reuses an id would produce two elements the board cannot tell apart, and
-        // every later target reference would resolve to whichever sorting happens to favour.
+        const id = kwargs['id'];
+        // A commit that reuses an id would produce two elements the board cannot tell apart, and every
+        // later target reference would resolve to whichever sorting happens to favour.
         if (id !== undefined && id !== '' && elementById(document, id) !== undefined) {
           errors.push({
             code: 'E_STATE',
@@ -83,24 +181,6 @@ export function boardResolutionStage(read: () => BoardDocument): ValidationStage
             subject: 'id',
           });
         }
-      }
-
-      // `whiteboard.scribble` accepts an optional `target` linking a mark to an element, so it
-      // resolves even though it does not require one: the source declares the kwarg, so a non-empty
-      // value must name something.
-      if (command.action === 'whiteboard.scribble') {
-        const target = command.kwargs['target'];
-        if (target !== undefined && target !== '') errors.push(...resolveTarget(document, target).errors);
-      }
-
-      const contentRef = command.kwargs['content_ref'];
-      if (contentRef !== undefined && contentRef !== '' && resolveContentRef(document, contentRef) === undefined) {
-        errors.push({
-          code: 'E_UNRESOLVED_REF',
-          layer: 'entity',
-          message: `No board content "${contentRef}"`,
-          subject: 'content_ref',
-        });
       }
 
       return errors;

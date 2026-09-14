@@ -427,12 +427,35 @@ export const CREATING_ACTIONS: readonly string[] = RECOVERED_CONTRACTS
   .filter((contract) => contract.requiredKwargs.includes('id'))
   .map((contract) => contract.action);
 
-/** Actions whose marks belong to the thinking surface, as the source states it. */
+/**
+ * Actions whose marks belong to the thinking surface.
+ *
+ * Read off the pinned **reducer** (`src/board/document.ts`), which commits each of these with
+ * `base('thinking', ...)`. The schema file cannot answer this question, and an earlier version of
+ * this table was transcribed from the prose in the schema descriptions instead — which produced a
+ * list that omitted `arrow` and a `TEST-205` assertion actively protecting the omission.
+ *
+ *   truth:    text(427), math(442), line(455), box(469), dots(551), shape(569)
+ *   thinking: arrow(480), highlight(495), scribble(512), count(596)
+ */
 export const THINKING_ACTIONS: readonly string[] = [
-  // "Provisional working. Thinking-surface marks never become truth-surface content."
-  'whiteboard.scribble',
+  // "Shows direction or causation between committed elements" — an annotation over the board, not
+  // board content.
+  'whiteboard.arrow',
   // "Highlight is a thinking-surface mark over a truth-surface element. It never alters the element."
   'whiteboard.highlight',
+  // "Provisional working. Thinking-surface marks never become truth-surface content."
+  'whiteboard.scribble',
   // The count marks are a thinking-layer annotation over the counted element.
   'whiteboard.count',
+];
+
+/** Actions whose elements are board content. The complement of `THINKING_ACTIONS` among creators. */
+export const TRUTH_ACTIONS: readonly string[] = [
+  'whiteboard.text',
+  'whiteboard.math',
+  'whiteboard.line',
+  'whiteboard.box',
+  'whiteboard.dots',
+  'whiteboard.shape',
 ];

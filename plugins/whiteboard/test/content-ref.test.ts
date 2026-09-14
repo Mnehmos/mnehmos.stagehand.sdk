@@ -1,255 +1,132 @@
 /**
- * TEST-206 — `content_ref` resolves to canonical content, byte for byte.
+ * TEST-206 — `content_ref` resolves through the host's lesson-content pack.
  *
- * The failure this guards is subtle: a resolver that re-serialises produces content that is
- * *equivalent* and not *identical*. It reads correctly in a snapshot test written against a literal,
- * because the literal was written from the resolver's output in the first place.
+ * `content_ref` does **not** name another board element. The pinned runtime injects `opts.resolveContent`,
+ * documented as resolving payloads from the lesson content pack, and its own test resolves
+ * `content_ref: 'equation.k'` through an external lookup. An earlier version of this file asserted
+ * board-element-to-board-element copying and proved the point by copying bytes between two committed
+ * elements — a different protocol wearing the same kwarg.
  *
- * So every assertion here compares against **what was committed**, captured before the reference is
- * resolved. A change in how this plugin stores or re-reads content cannot make the test agree with
- * the bug, because the expected value is not produced by the code under test.
+ * Two behaviors are checked here, both of which need the public path rather than a helper:
+ *
+ * - a `content_ref` command passes registry validation, reaches the entity layer, and commits content
+ *   taken from the injected pack;
+ * - `content_ref` and inline `text`/`latex` are mutually exclusive, refused at the **registry** layer.
+ *
+ * The reference resolving to nothing is *not* an error: the pin yields empty content and still commits,
+ * because the content pack belongs to the host and a miss is the host's to surface.
  *
  * Covers FR-232. Task T-076.
  */
 
 import { describe, expect, it } from 'vitest';
-import { boardResolutionStage, resolveContentRef, WHITEBOARD_SCHEMAS, WhiteboardPlugin } from '../src/index.js';
+import { validateCommand } from '@stagehand/registry';
+import { WhiteboardPlugin } from '../src/index.js';
 
-const LATEX = String.raw`\frac{a}{b} \cdot \left( x^{2} \right)`;
+const PACK: Readonly<Record<string, string>> = {
+  'equation.k': String.raw`\frac{a}{b} \cdot \left( x^{2} \right)`,
+  'prose.long': 'A paragraph the producer did not want to re-type inline.',
+};
 
-function pluginWithContent(): { plugin: WhiteboardPlugin; committed: string } {
-  const plugin = new WhiteboardPlugin();
-  // LaTeX with backslashes and braces: the kind of content a re-serialiser mangles.
-  plugin.commit([
-    {
-      plugin: 'whiteboard',
-      action: 'whiteboard.math',
-      payload: { args: [], kwargs: { id: 'eq1', latex: LATEX }, refs: [] },
-    },
-  ]);
-  return { plugin, committed: LATEX };
+function pluginWithPack(): WhiteboardPlugin {
+  return new WhiteboardPlugin({ resolveContent: (reference) => PACK[reference] });
 }
 
-describe('TEST-206 / resolution returns the committed bytes', () => {
-  it('returns content identical to what was committed', () => {
-    const { plugin, committed } = pluginWithContent();
-    expect(plugin.contentFor('eq1')).toBe(committed);
+/** Run a command the way the runtime does: registry validation with the stages, then commit. */
+function run(plugin: WhiteboardPlugin, action: string, kwargs: Record<string, string>): boolean {
+  const command = { action, args: [], kwargs, raw: `[${action}]` };
+  const verdict = validateCommand(plugin.registry, command, { stages: plugin.stages });
+  if (!verdict.ok) return false;
+  plugin.commit([{ plugin: 'whiteboard', action, payload: { args: [], kwargs, refs: [] } }]);
+  return true;
+}
+
+describe('TEST-206 / a reference resolves from the injected pack', () => {
+  it('commits the pack payload for a referenced equation', () => {
+    const plugin = pluginWithPack();
+    expect(run(plugin, 'whiteboard.math', { id: 'eq', content_ref: 'equation.k' })).toBe(true);
+
+    const element = plugin.elements.find((candidate) => candidate.id === 'eq');
+    expect(element?.content).toBe(PACK['equation.k']);
+    // Byte for byte against the pack, not against a literal this test invented.
+    expect([...(element?.content ?? '')]).toEqual([...PACK['equation.k']!]);
   });
 
-  it('preserves backslashes, braces, and spacing exactly', () => {
-    const plugin = new WhiteboardPlugin();
-    const awkward = String.raw`  \begin{align} a &= b \\ c &= d \end{align}  `;
-    plugin.commit([
-      {
-        plugin: 'whiteboard',
-        action: 'whiteboard.math',
-        payload: { args: [], kwargs: { id: 'eq', latex: awkward }, refs: [] },
-      },
-    ]);
-    expect(plugin.contentFor('eq')).toBe(awkward);
-    // Character-level, not just string-equal: a normalising layer would show up here first.
-    expect([...(plugin.contentFor('eq') ?? '')]).toEqual([...awkward]);
+  it('commits the pack payload for referenced prose', () => {
+    const plugin = pluginWithPack();
+    expect(run(plugin, 'whiteboard.text', { id: 'para', content_ref: 'prose.long' })).toBe(true);
+    expect(plugin.contentFor('para')).toBe(PACK['prose.long']);
   });
 
-  it('preserves a text element containing quotes and unicode', () => {
-    const plugin = new WhiteboardPlugin();
-    const text = 'He said "it\u2019s \u00e9\u00e0\u00fc" \u2014 then left.';
-    plugin.commit([
-      {
-        plugin: 'whiteboard',
-        action: 'whiteboard.text',
-        payload: { args: [], kwargs: { id: 't1', text }, refs: [] },
-      },
-    ]);
-    expect(plugin.contentFor('t1')).toBe(text);
-  });
-
-  it('returns different content for different ids, without cross-contamination', () => {
-    const { plugin, committed } = pluginWithContent();
-    plugin.commit([
-      {
-        plugin: 'whiteboard',
-        action: 'whiteboard.text',
-        payload: { args: [], kwargs: { id: 'x', text: 'plain' }, refs: [] },
-      },
-    ]);
-    expect(plugin.contentFor('eq1')).toBe(committed);
-    expect(plugin.contentFor('x')).toBe('plain');
-  });
-
-  it('resolves through the standalone helper as well as the plugin', () => {
-    const { plugin, committed } = pluginWithContent();
-    expect(resolveContentRef(plugin.document, 'eq1')).toBe(committed);
-  });
-});
-
-describe('TEST-206 / an unresolvable reference is rejected, not substituted', () => {
-  it('returns undefined for an unknown reference', () => {
-    const { plugin } = pluginWithContent();
-    expect(plugin.contentFor('nope')).toBeUndefined();
-    expect(resolveContentRef(plugin.document, 'nope')).toBeUndefined();
-  });
-
-  it('does not fall back to a similar id', () => {
-    const { plugin } = pluginWithContent();
-    // `eq` is a prefix of `eq1`. A fuzzy resolver would find something; this must find nothing.
-    expect(plugin.contentFor('eq')).toBeUndefined();
-    expect(plugin.contentFor('eq1 ')).toBeUndefined();
-    expect(plugin.contentFor('EQ1')).toBeUndefined();
-  });
-
-  it('reports E_UNRESOLVED_REF through the contributed stage', () => {
-    const { plugin } = pluginWithContent();
-    const stage = boardResolutionStage(() => plugin.document);
-    const errors = stage.validate(
-      {
-        action: 'whiteboard.text',
-        args: [],
-        kwargs: { id: 'new', text: 'x', content_ref: 'missing' },
-        raw: '[whiteboard.text]',
-      },
-      {},
-    ) ?? [];
-    expect(errors).toHaveLength(1);
-    expect(errors[0]?.code).toBe('E_UNRESOLVED_REF');
-    expect(errors[0]?.subject).toBe('content_ref');
-  });
-
-  it('accepts a content_ref that does resolve', () => {
-    const { plugin } = pluginWithContent();
-    const stage = boardResolutionStage(() => plugin.document);
-    const errors = stage.validate(
-      {
-        action: 'whiteboard.text',
-        args: [],
-        kwargs: { id: 'new', text: 'x', content_ref: 'eq1' },
-        raw: '[whiteboard.text]',
-      },
-      {},
-    ) ?? [];
-    expect(errors.filter((error) => error.subject === 'content_ref')).toEqual([]);
-  });
-});
-
-describe('TEST-206 / content tracks the document', () => {
-  it('stops resolving once the element is erased', () => {
-    const { plugin, committed } = pluginWithContent();
-    expect(plugin.contentFor('eq1')).toBe(committed);
-    plugin.commit([
-      {
-        plugin: 'whiteboard',
-        action: 'whiteboard.erase',
-        payload: { args: [], kwargs: { target: 'eq1' }, refs: [] },
-      },
-    ]);
-    // Read from the element, so erasing the element erases the content. A parallel copy would still
-    // be answering here, which is exactly the drift a second store introduces.
-    expect(plugin.contentFor('eq1')).toBeUndefined();
-  });
-
-  it('stops resolving once the layer holding it is cleared', () => {
-    const { plugin } = pluginWithContent();
-    plugin.commit([
-      {
-        plugin: 'whiteboard',
-        action: 'whiteboard.clear',
-        payload: { args: [], kwargs: { layer: 'truth' }, refs: [] },
-      },
-    ]);
-    expect(plugin.contentFor('eq1')).toBeUndefined();
-  });
-});
-
-describe('TEST-206 / content_ref reaches the resolver through registry validation', () => {
-  /**
-   * The first version of this file exercised `boardResolutionStage` directly, which proved the helper
-   * worked and not that a producer could ever get there. With `content_ref` missing from the public
-   * schema, an end-to-end command was rejected *before* the stage — so the helper was unreachable and
-   * the test could not tell. These cases go through `validateCommand` with the plugin's own registry
-   * and stages, which is the path a command actually travels.
-   */
-  it('accepts a command carrying content_ref and commits the referenced bytes', async () => {
-    const { validateCommand } = await import('@stagehand/registry');
-    const plugin = new WhiteboardPlugin();
-
-    // Commit the source element whose content will be referenced.
-    const source = String.raw`\sum_{i=1}^{n} i^{2}`;
-    plugin.commit([
-      {
-        plugin: 'whiteboard',
-        action: 'whiteboard.math',
-        payload: { args: [], kwargs: { id: 'src', latex: source }, refs: [] },
-      },
-    ]);
-
-    // A second command references it instead of re-typing it.
-    const command = {
-      action: 'whiteboard.math',
-      args: [],
-      kwargs: { id: 'copy', content_ref: 'src' },
-      raw: '[whiteboard.math id=copy content_ref=src]',
-    };
-
-    const verdict = validateCommand(plugin.registry, command, { stages: plugin.stages });
-    expect(verdict.ok, verdict.ok ? '' : JSON.stringify(verdict.errors)).toBe(true);
-
-    plugin.commit([
-      { plugin: 'whiteboard', action: 'whiteboard.math', payload: { args: [], kwargs: command.kwargs, refs: [] } },
-    ]);
-
-    // Byte for byte, and identical to what the source element holds.
-    expect(plugin.contentFor('copy')).toBe(source);
-    expect(plugin.contentFor('copy')).toBe(plugin.contentFor('src'));
-  });
-
-  it('rejects an end-to-end command whose content_ref does not resolve', async () => {
-    const { validateCommand } = await import('@stagehand/registry');
-    const plugin = new WhiteboardPlugin();
-
-    const verdict = validateCommand(
-      plugin.registry,
-      {
-        action: 'whiteboard.text',
-        args: [],
-        kwargs: { id: 't', content_ref: 'never-committed' },
-        raw: '[whiteboard.text id=t content_ref=never-committed]',
-      },
-      { stages: plugin.stages },
-    );
-
-    expect(verdict.ok).toBe(false);
-    if (!verdict.ok) {
-      expect(verdict.layer).toBe('entity');
-      expect(verdict.errors.some((error) => error.code === 'E_UNRESOLVED_REF' && error.subject === 'content_ref')).toBe(true);
-    }
-  });
-
-  it('accepts content_ref on text as well as math, since the source declares it on both', async () => {
-    const { validateCommand } = await import('@stagehand/registry');
-    const plugin = new WhiteboardPlugin();
-    plugin.commit([
-      {
-        plugin: 'whiteboard',
-        action: 'whiteboard.text',
-        payload: { args: [], kwargs: { id: 'para', text: 'long prose' }, refs: [] },
-      },
-    ]);
-
-    for (const action of ['whiteboard.text', 'whiteboard.math']) {
-      const verdict = validateCommand(
-        plugin.registry,
-        { action, args: [], kwargs: { id: `${action}-copy`, content_ref: 'para' }, raw: `[${action}]` },
-        { stages: plugin.stages },
-      );
-      expect(verdict.ok, `${action} rejected a content_ref the source declares`).toBe(true);
-    }
-  });
-
-  it('declares content_ref on exactly the two actions the source declares it on', () => {
-    const withContentRef = WHITEBOARD_SCHEMAS.filter(
+  it('resolves through math and text, the two actions the source declares it on', async () => {
+    const { WHITEBOARD_SCHEMAS } = await import('../src/index.js');
+    const withRef = WHITEBOARD_SCHEMAS.filter(
       (schema) => schema.optionalKwargs?.['content_ref'] !== undefined,
     ).map((schema) => schema.action);
-    expect(withContentRef.sort()).toEqual(['whiteboard.math', 'whiteboard.text']);
-    expect(WHITEBOARD_SCHEMAS.find((s) => s.action === 'whiteboard.text')?.optionalKwargs?.['content_ref']?.default).toBe('');
+    expect(withRef.sort()).toEqual(['whiteboard.math', 'whiteboard.text']);
+  });
+
+  it('does not resolve a reference from another board element', () => {
+    // The old protocol, asserted absent: a committed element's id is not a content reference.
+    const plugin = pluginWithPack();
+    expect(run(plugin, 'whiteboard.math', { id: 'source', latex: 'inline' })).toBe(true);
+    expect(run(plugin, 'whiteboard.math', { id: 'copy', content_ref: 'source' })).toBe(true);
+
+    // `source` is not in the pack, so the reference yields empty content — it does not copy.
+    expect(plugin.contentFor('copy')).toBe('');
+    expect(plugin.contentFor('copy')).not.toBe(plugin.contentFor('source'));
+  });
+
+  it('yields empty content for a reference the pack does not hold, and still commits', () => {
+    // The pin: `opts.resolveContent?.(ref) ?? ''`. A miss is not a refusal.
+    const plugin = pluginWithPack();
+    expect(run(plugin, 'whiteboard.math', { id: 'missing', content_ref: 'not.in.pack' })).toBe(true);
+    expect(plugin.contentFor('missing')).toBe('');
+  });
+
+  it('reports empty content when no resolver was injected at all', () => {
+    const plugin = new WhiteboardPlugin();
+    expect(run(plugin, 'whiteboard.math', { id: 'eq', content_ref: 'equation.k' })).toBe(true);
+    expect(plugin.contentFor('eq')).toBe('');
+  });
+});
+
+describe('TEST-206 / inline and referenced content are mutually exclusive', () => {
+  it('refuses text plus content_ref at the registry layer', () => {
+    const plugin = pluginWithPack();
+    const verdict = validateCommand(
+      plugin.registry,
+      { action: 'whiteboard.text', args: [], kwargs: { id: 't', text: 'inline', content_ref: 'prose.long' }, raw: '[whiteboard.text]' },
+      { stages: plugin.stages },
+    );
+    expect(verdict.ok).toBe(false);
+    if (!verdict.ok) {
+      expect(verdict.layer).toBe('registry');
+      expect(verdict.errors.some((error) => error.message.includes('not both'))).toBe(true);
+    }
+  });
+
+  it('refuses latex plus content_ref', () => {
+    const plugin = pluginWithPack();
+    const verdict = validateCommand(
+      plugin.registry,
+      { action: 'whiteboard.math', args: [], kwargs: { id: 'm', latex: 'x', content_ref: 'equation.k' }, raw: '[whiteboard.math]' },
+      { stages: plugin.stages },
+    );
+    expect(verdict.ok).toBe(false);
+    if (!verdict.ok) expect(verdict.errors.some((error) => error.message.includes('not both'))).toBe(true);
+  });
+
+  it('accepts either one alone', () => {
+    const plugin = pluginWithPack();
+    expect(run(plugin, 'whiteboard.text', { id: 'a', text: 'inline' })).toBe(true);
+    expect(run(plugin, 'whiteboard.text', { id: 'b', content_ref: 'prose.long' })).toBe(true);
+  });
+
+  it('does not treat an empty inline kwarg as supplying inline content', () => {
+    // The pin's test is `kwargs.text || kwargs.latex`, so an empty string does not conflict.
+    const plugin = pluginWithPack();
+    expect(run(plugin, 'whiteboard.text', { id: 't', text: '', content_ref: 'prose.long' })).toBe(true);
+    expect(plugin.contentFor('t')).toBe(PACK['prose.long']);
   });
 });

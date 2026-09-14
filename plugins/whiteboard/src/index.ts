@@ -43,6 +43,7 @@ export {
   RECOVERED_CONTRACTS,
   schemaFor,
   SHAPES,
+  TRUTH_ACTIONS,
   TARGET_ACTIONS,
   TEXT_SIZES,
   THINKING_ACTIONS,
@@ -64,26 +65,37 @@ export {
 
 export {
   boardResolutionStage,
+  BOARD_MAX,
+  BOARD_MIN,
   isTargetAction,
-  resolveContentRef,
+  NULL_CONTENT_RESOLVER,
   resolveTarget,
   type BoardResolution,
+  type ContentResolver,
 } from './resolve.js';
 
-export { WhiteboardPlugin, whiteboardCommitter, type WhiteboardPluginOptions } from './plugin.js';
+export { WhiteboardPlugin, type WhiteboardPluginOptions } from './plugin.js';
 
 /** The event type whose producer this plugin is; the type itself belongs to `FEAT-005`. */
 export const BOARD_REVISION_COMMITTED = 'board.revision.committed';
 
 export {
+  activeElements,
+  activePage,
+  countableTotal,
+  DEFAULT_PAGE_ID,
   elementById,
   elementsOn,
   EMPTY_BOARD,
+  expireMarks,
   isLayerEmpty,
+  pageById,
   reduce,
+  type BoardBounds,
   type BoardChange,
   type BoardDocument,
   type BoardElement,
   type BoardElementKind,
   type BoardLayer,
+  type BoardPage,
 } from './types.js';

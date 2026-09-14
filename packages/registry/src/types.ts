@@ -183,7 +183,15 @@ export interface ValidationContext {
 
 /** A contributed validation stage (FR-178). */
 export interface ValidationStage {
-  readonly layer: Exclude<ValidationLayer, 'syntax' | 'registry'>;
+  /**
+   * Which layer this stage runs in.
+   *
+   * `syntax` is not contributable — it is the parser's contract — but `registry` is, because a plugin
+   * that owns a command family may need cross-field rules over its own actions and the pinned source
+   * fails them at the registry layer. Forbidding that would force such a rule into a later layer and
+   * change the failure layer a producer sees.
+   */
+  readonly layer: Exclude<ValidationLayer, 'syntax'>;
   /** Return errors to reject, or an empty array / undefined to pass. Must not mutate anything. */
   validate(command: StagehandCommand, context: ValidationContext): readonly ValidationError[] | undefined;
 }
