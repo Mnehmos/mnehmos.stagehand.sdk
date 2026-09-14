@@ -62,18 +62,6 @@ export class InvalidActionError extends Error {
   }
 }
 
-/** Keys accepted for a schema, in a stable order. Aliases resolve to their canonical key. */
-function canonicalKeys(schema: CommandSchema): Map<string, string> {
-  const map = new Map<string, string>();
-  const add = (key: string, spec: { aliases?: readonly string[] }): void => {
-    map.set(key, key);
-    for (const alias of spec.aliases ?? []) map.set(alias, key);
-  };
-  for (const [key, spec] of Object.entries(schema.requiredKwargs ?? {})) add(key, spec);
-  for (const [key, spec] of Object.entries(schema.optionalKwargs ?? {})) add(key, spec);
-  return map;
-}
-
 export class CapabilityRegistry {
   readonly #schemas = new Map<Action, CommandSchema>();
 
@@ -104,11 +92,6 @@ export class CapabilityRegistry {
   /** Action names in stable sorted order. */
   get actions(): readonly string[] {
     return [...this.#schemas.keys()].sort();
-  }
-
-  /** The canonical key for a producer-supplied key, resolving aliases. */
-  resolveKey(schema: CommandSchema, key: string): string | undefined {
-    return canonicalKeys(schema).get(key);
   }
 
   /**

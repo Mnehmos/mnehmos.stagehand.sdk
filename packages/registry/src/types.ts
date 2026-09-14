@@ -114,8 +114,6 @@ export interface KwargSpec {
    * and applied downstream — validation never writes it into the command.
    */
   readonly default?: string;
-  /** Alternative producer-facing key spellings, e.g. `pause_ms` for `pause`. */
-  readonly aliases?: readonly string[];
   readonly description?: string;
 }
 

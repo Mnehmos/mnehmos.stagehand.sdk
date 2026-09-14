@@ -29,7 +29,7 @@ export const FIXTURE_SCHEMAS: readonly CommandSchema[] = [
     maxArgs: 1,
     argTypes: [{ kind: 'entityRef' }],
     optionalKwargs: {
-      entity: { type: { kind: 'entityRef' }, aliases: ['target'] },
+      entity: { type: { kind: 'entityRef' } },
       color: { type: { kind: 'color' }, default: '#ef4444' },
       entities: { type: { kind: 'entityRefList', minItems: 1, maxItems: 12 } },
     },
