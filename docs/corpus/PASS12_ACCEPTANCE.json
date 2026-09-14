@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "corpus-validator",
+      "pass": true,
+      "detail": {
+        "status": "PASS",
+        "errors": [],
+        "counts": {
+          "surfaces": 168,
+          "live_surfaces": 167,
+          "dead_surfaces": 1,
+          "features": 18,
+          "requirements": 167,
+          "parity_tests": 167,
+          "api_contracts_101_125": 25
+        }
+      }
+    },
+    {
+      "name": "analysis-explicit-inference-tags-zero",
+      "pass": true,
+      "detail": {
+        "matches": []
+      }
+    },
+    {
+      "name": "json-parse",
+      "pass": true,
+      "detail": {
+        "failures": [],
+        "count": 37
+      }
+    },
+    {
+      "name": "required-output-set",
+      "pass": true,
+      "detail": {
+        "missing": []
+      }
+    },
+    {
+      "name": "feature-artifact-set",
+      "pass": true,
+      "detail": {
+        "feature_dirs": 18,
+        "missing": []
+      }
+    },
+    {
+      "name": "traceability-counts",
+      "pass": true,
+      "detail": {
+        "SURF": 168,
+        "FEAT": 18,
+        "FR": 167,
+        "CTR": 122,
+        "T": 18,
+        "TEST": 167,
+        "DIV": 9
+      }
+    }
+  ]
+}

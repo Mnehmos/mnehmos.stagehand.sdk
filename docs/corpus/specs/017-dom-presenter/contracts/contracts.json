@@ -1,0 +1,80 @@
+{
+  "feature": "FEAT-017",
+  "name": "Word-Anchored DOM Presenter Choreography",
+  "surface_contracts": [
+    {
+      "id": "CTR-090",
+      "surface": "SURF-090",
+      "action": "stage.focus",
+      "host": "Vibe Coders Bible",
+      "behavior": "Lock presentation focus to a paragraph.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-091",
+      "surface": "SURF-091",
+      "action": "stage.focus.off",
+      "host": "Vibe Coders Bible",
+      "behavior": "Release manual paragraph focus.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-092",
+      "surface": "SURF-092",
+      "action": "stage.auto",
+      "host": "Vibe Coders Bible",
+      "behavior": "Alias/path to automatic focus mode.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-093",
+      "surface": "SURF-093",
+      "action": "stage.highlight",
+      "host": "Vibe Coders Bible",
+      "behavior": "Highlight DOM element containing text.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-094",
+      "surface": "SURF-094",
+      "action": "stage.highlight.off",
+      "host": "Vibe Coders Bible",
+      "behavior": "Remove one/all text highlights.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-095",
+      "surface": "SURF-095",
+      "action": "stage.clear",
+      "host": "Vibe Coders Bible",
+      "behavior": "Clear manual focus and highlights.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-096",
+      "surface": "SURF-096",
+      "action": "stage.diagram",
+      "host": "Vibe Coders Bible",
+      "behavior": "Show diagram asset.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-097",
+      "surface": "SURF-097",
+      "action": "stage.diagram.off",
+      "host": "Vibe Coders Bible",
+      "behavior": "Hide diagram asset.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    }
+  ],
+  "api_contracts": [],
+  "divergences": []
+}

@@ -1,0 +1,75 @@
+{
+  "count": 10,
+  "cases": [
+    {
+      "id": "G-001",
+      "name": "valid bracketed command",
+      "kind": "golden",
+      "status": "pass",
+      "duration_ms": 0.369
+    },
+    {
+      "id": "G-002",
+      "name": "quoted values preserve spaces",
+      "kind": "golden",
+      "status": "pass",
+      "duration_ms": 0.046
+    },
+    {
+      "id": "G-003",
+      "name": "apostrophe remains literal",
+      "kind": "golden",
+      "status": "pass",
+      "duration_ms": 0.102
+    },
+    {
+      "id": "G-004",
+      "name": "LaTeX backslashes survive",
+      "kind": "golden",
+      "status": "pass",
+      "duration_ms": 0.109
+    },
+    {
+      "id": "G-005",
+      "name": "spaces around equals normalize",
+      "kind": "golden",
+      "status": "pass",
+      "duration_ms": 0.081
+    },
+    {
+      "id": "G-006",
+      "name": "schema-aware unquoted multiword recovery",
+      "kind": "golden",
+      "status": "pass",
+      "duration_ms": 0.06
+    },
+    {
+      "id": "G-007",
+      "name": "nested compound support",
+      "kind": "golden",
+      "status": "pass",
+      "duration_ms": 0.374
+    },
+    {
+      "id": "G-008",
+      "name": "universal end closes innermost",
+      "kind": "golden",
+      "status": "pass",
+      "duration_ms": 0.088
+    },
+    {
+      "id": "G-009",
+      "name": "unmatched opener degrades visibly",
+      "kind": "golden",
+      "status": "pass",
+      "duration_ms": 0.058
+    },
+    {
+      "id": "G-010",
+      "name": "orphan closer does not execute",
+      "kind": "golden",
+      "status": "pass",
+      "duration_ms": 0.037
+    }
+  ]
+}

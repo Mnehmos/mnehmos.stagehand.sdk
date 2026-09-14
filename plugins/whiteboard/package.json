@@ -1,0 +1,26 @@
+{
+  "name": "@stagehand/plugin-whiteboard",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Reusable screen-space explanatory canvas: text, math, shapes, counting, erasure, reveal.",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@stagehand/readiness": "workspace:*",
+    "@stagehand/registry": "workspace:*",
+    "@stagehand/runtime": "workspace:*",
+    "@stagehand/trace": "workspace:*"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "feature": "FEAT-005",
+  "name": "Trace, Replay & Diagnostics",
+  "surface_contracts": [
+    {
+      "id": "CTR-120",
+      "surface": "SURF-117",
+      "name": "StagehandRuntimeEvent",
+      "kind": "module export",
+      "host": "Clio"
+    }
+  ],
+  "api_contracts": [
+    {
+      "id": "CTR-120",
+      "description": "StagehandRuntimeEvent type",
+      "owner": "FEAT-005"
+    },
+    {
+      "id": "CTR-122",
+      "description": "EventBus public/private trace",
+      "owner": "FEAT-005"
+    }
+  ],
+  "divergences": [
+    "DIV-005"
+  ]
+}

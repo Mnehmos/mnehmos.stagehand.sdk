@@ -1,0 +1,1349 @@
+{
+  "count": 168,
+  "surfaces": [
+    {
+      "id": "SURF-001",
+      "surface": "arrow",
+      "kind": "protocol command",
+      "application": "LLM-Chess",
+      "location": "Mnehmos/LLM-Chess@450bdbded7f34e94cffc02264082849714270af3:src/utils/board-annotations.ts",
+      "notes": "Draw an arrow between chess squares; optional color."
+    },
+    {
+      "id": "SURF-002",
+      "surface": "highlight",
+      "kind": "protocol command",
+      "application": "LLM-Chess",
+      "location": "Mnehmos/LLM-Chess@450bdbded7f34e94cffc02264082849714270af3:src/utils/board-annotations.ts",
+      "notes": "Highlight one chess square; optional color."
+    },
+    {
+      "id": "SURF-003",
+      "surface": "circle",
+      "kind": "protocol command",
+      "application": "LLM-Chess",
+      "location": "Mnehmos/LLM-Chess@450bdbded7f34e94cffc02264082849714270af3:src/utils/board-annotations.ts",
+      "notes": "Circle one chess square; optional color."
+    },
+    {
+      "id": "SURF-004",
+      "surface": "move",
+      "kind": "protocol command",
+      "application": "LLM-Chess",
+      "location": "Mnehmos/LLM-Chess@450bdbded7f34e94cffc02264082849714270af3:src/utils/board-annotations.ts",
+      "notes": "Encode a proposed/visualized move between squares; optional promotion."
+    },
+    {
+      "id": "SURF-005",
+      "surface": "map.view",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Set camera coordinate/zoom."
+    },
+    {
+      "id": "SURF-006",
+      "surface": "map.focus",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Focus camera on one registered entity."
+    },
+    {
+      "id": "SURF-007",
+      "surface": "map.fit",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Frame multiple entities or explicit bounds."
+    },
+    {
+      "id": "SURF-008",
+      "surface": "map.mode",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Switch rhetorical map mode."
+    },
+    {
+      "id": "SURF-009",
+      "surface": "map.highlight",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Highlight an entity."
+    },
+    {
+      "id": "SURF-010",
+      "surface": "map.spotlight",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Dim scene except target aperture."
+    },
+    {
+      "id": "SURF-011",
+      "surface": "map.label",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Attach/update an entity label."
+    },
+    {
+      "id": "SURF-012",
+      "surface": "map.clear",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Clear classes of transient map state."
+    },
+    {
+      "id": "SURF-013",
+      "surface": "map.arrow",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Great-circle directed connector."
+    },
+    {
+      "id": "SURF-014",
+      "surface": "map.circle",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Ring an entity."
+    },
+    {
+      "id": "SURF-015",
+      "surface": "map.line",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Great-circle undirected connector."
+    },
+    {
+      "id": "SURF-016",
+      "surface": "layer.on",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Enable a named thematic layer."
+    },
+    {
+      "id": "SURF-017",
+      "surface": "layer.off",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Disable a named thematic layer."
+    },
+    {
+      "id": "SURF-018",
+      "surface": "flow.animate",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Animate a route/flow."
+    },
+    {
+      "id": "SURF-019",
+      "surface": "flow.clear",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Clear active flows."
+    },
+    {
+      "id": "SURF-020",
+      "surface": "piece.place",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Place/update globe-anchored simulation piece."
+    },
+    {
+      "id": "SURF-021",
+      "surface": "piece.move",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Move/restyle a piece."
+    },
+    {
+      "id": "SURF-022",
+      "surface": "piece.remove",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Remove one piece."
+    },
+    {
+      "id": "SURF-023",
+      "surface": "piece.clear",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Clear pieces."
+    },
+    {
+      "id": "SURF-024",
+      "surface": "chat.say",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Open a source-backed narration attribution scope."
+    },
+    {
+      "id": "SURF-025",
+      "surface": "source.show",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Display a source receipt."
+    },
+    {
+      "id": "SURF-026",
+      "surface": "source.hide",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Hide source receipts."
+    },
+    {
+      "id": "SURF-027",
+      "surface": "claim.show",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Declared in CommandAction but no schema entry found."
+    },
+    {
+      "id": "SURF-028",
+      "surface": "entity.propose",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Propose a new registry entity."
+    },
+    {
+      "id": "SURF-029",
+      "surface": "mark.clip",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Mark export moment."
+    },
+    {
+      "id": "SURF-030",
+      "surface": "scene.fade",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Apply broadcast fade overlay."
+    },
+    {
+      "id": "SURF-031",
+      "surface": "scene.title",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Show/clear title/chapter card."
+    },
+    {
+      "id": "SURF-032",
+      "surface": "asset.show",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Display registered/inline evidence asset."
+    },
+    {
+      "id": "SURF-033",
+      "surface": "asset.clear",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Clear evidence assets."
+    },
+    {
+      "id": "SURF-034",
+      "surface": "whiteboard.show",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Show screen-space whiteboard."
+    },
+    {
+      "id": "SURF-035",
+      "surface": "whiteboard.hide",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Hide whiteboard."
+    },
+    {
+      "id": "SURF-036",
+      "surface": "whiteboard.clear",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Clear whiteboard."
+    },
+    {
+      "id": "SURF-037",
+      "surface": "whiteboard.text",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Place freeform text."
+    },
+    {
+      "id": "SURF-038",
+      "surface": "whiteboard.line",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Draw freeform line."
+    },
+    {
+      "id": "SURF-039",
+      "surface": "whiteboard.box",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Draw box/panel."
+    },
+    {
+      "id": "SURF-040",
+      "surface": "camera.center",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Semantic camera centering primitive (v2)."
+    },
+    {
+      "id": "SURF-041",
+      "surface": "camera.focus_region",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Semantic region framing primitive (v2)."
+    },
+    {
+      "id": "SURF-042",
+      "surface": "camera.establish_globe",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Globe-scale establishing camera (v2)."
+    },
+    {
+      "id": "SURF-043",
+      "surface": "highlight.region",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Semantic region highlight (v2)."
+    },
+    {
+      "id": "SURF-044",
+      "surface": "highlight.location",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Semantic point highlight (v2)."
+    },
+    {
+      "id": "SURF-045",
+      "surface": "label.show",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Semantic label primitive (v2)."
+    },
+    {
+      "id": "SURF-046",
+      "surface": "route.draw",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Semantic route primitive (v2)."
+    },
+    {
+      "id": "SURF-047",
+      "surface": "camera.follow_marker",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Set/clear chase-camera policy."
+    },
+    {
+      "id": "SURF-048",
+      "surface": "map.overlay.show",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Activate registered map overlay."
+    },
+    {
+      "id": "SURF-049",
+      "surface": "map.overlay.hide",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Hide one/all overlays."
+    },
+    {
+      "id": "SURF-050",
+      "surface": "map.basemap",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Switch named/registered basemap."
+    },
+    {
+      "id": "SURF-051",
+      "surface": "map.timecursor",
+      "kind": "protocol command",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/types.ts",
+      "notes": "Set overlay time cursor."
+    },
+    {
+      "id": "SURF-052",
+      "surface": "avatar.move",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Move teacher to semantic anchor."
+    },
+    {
+      "id": "SURF-053",
+      "surface": "avatar.look",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Aim teacher gaze."
+    },
+    {
+      "id": "SURF-054",
+      "surface": "avatar.gesture",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Play semantic teaching gesture."
+    },
+    {
+      "id": "SURF-055",
+      "surface": "avatar.point",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Point at committed board element."
+    },
+    {
+      "id": "SURF-056",
+      "surface": "avatar.face",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Set facial expression."
+    },
+    {
+      "id": "SURF-057",
+      "surface": "whiteboard.show",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Activate board/new page."
+    },
+    {
+      "id": "SURF-058",
+      "surface": "whiteboard.hide",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Occlude/deactivate presentation without destroying content."
+    },
+    {
+      "id": "SURF-059",
+      "surface": "whiteboard.clear",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Clear board layer/page content."
+    },
+    {
+      "id": "SURF-060",
+      "surface": "whiteboard.text",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Commit exact text element."
+    },
+    {
+      "id": "SURF-061",
+      "surface": "whiteboard.math",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Commit typeset equation."
+    },
+    {
+      "id": "SURF-062",
+      "surface": "whiteboard.line",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Draw line."
+    },
+    {
+      "id": "SURF-063",
+      "surface": "whiteboard.box",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Draw box."
+    },
+    {
+      "id": "SURF-064",
+      "surface": "whiteboard.arrow",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Draw arrow."
+    },
+    {
+      "id": "SURF-065",
+      "surface": "whiteboard.highlight",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Highlight board element/region."
+    },
+    {
+      "id": "SURF-066",
+      "surface": "whiteboard.scribble",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Commit thinking-layer scribble."
+    },
+    {
+      "id": "SURF-067",
+      "surface": "whiteboard.dots",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Draw countable dots/tokens."
+    },
+    {
+      "id": "SURF-068",
+      "surface": "whiteboard.shape",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Draw named geometry."
+    },
+    {
+      "id": "SURF-069",
+      "surface": "whiteboard.count",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Count properties/items."
+    },
+    {
+      "id": "SURF-070",
+      "surface": "whiteboard.erase",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Erase target."
+    },
+    {
+      "id": "SURF-071",
+      "surface": "whiteboard.reveal",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Reveal concealed target."
+    },
+    {
+      "id": "SURF-072",
+      "surface": "projector.prepare",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Prepare media source asynchronously."
+    },
+    {
+      "id": "SURF-073",
+      "surface": "projector.lower",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Lower projection screen."
+    },
+    {
+      "id": "SURF-074",
+      "surface": "projector.source",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Attach prepared source."
+    },
+    {
+      "id": "SURF-075",
+      "surface": "projector.play",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Play source."
+    },
+    {
+      "id": "SURF-076",
+      "surface": "projector.wait",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Wait for media/interval."
+    },
+    {
+      "id": "SURF-077",
+      "surface": "projector.pause",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Pause source."
+    },
+    {
+      "id": "SURF-078",
+      "surface": "projector.raise",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Raise screen."
+    },
+    {
+      "id": "SURF-079",
+      "surface": "room.lights",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Change lighting zone/state."
+    },
+    {
+      "id": "SURF-080",
+      "surface": "room.mode",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Set semantic classroom mode."
+    },
+    {
+      "id": "SURF-081",
+      "surface": "camera.focus",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Focus student camera."
+    },
+    {
+      "id": "SURF-082",
+      "surface": "lesson.ask",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Open free-response question."
+    },
+    {
+      "id": "SURF-083",
+      "surface": "lesson.choice",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Open clickable choice question."
+    },
+    {
+      "id": "SURF-084",
+      "surface": "lesson.wait",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Pause for student boundary."
+    },
+    {
+      "id": "SURF-085",
+      "surface": "lesson.resume",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Resume lesson."
+    },
+    {
+      "id": "SURF-086",
+      "surface": "lesson.objective",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Set objective status."
+    },
+    {
+      "id": "SURF-087",
+      "surface": "lesson.phase",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Switch model/practice phase."
+    },
+    {
+      "id": "SURF-088",
+      "surface": "lesson.assess",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Record/judge answer."
+    },
+    {
+      "id": "SURF-089",
+      "surface": "lesson.complete",
+      "kind": "protocol command",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/types.ts",
+      "notes": "Complete lesson."
+    },
+    {
+      "id": "SURF-090",
+      "surface": "stage.focus",
+      "kind": "protocol command",
+      "application": "Vibe Coders Bible",
+      "location": "Mnehmos/vibe-coders-bible@cb032732158f615331e00c27f688a3c847c0a97c:site/src/components/Stagehand.tsx",
+      "notes": "Lock presentation focus to a paragraph."
+    },
+    {
+      "id": "SURF-091",
+      "surface": "stage.focus.off",
+      "kind": "protocol command",
+      "application": "Vibe Coders Bible",
+      "location": "Mnehmos/vibe-coders-bible@cb032732158f615331e00c27f688a3c847c0a97c:site/src/components/Stagehand.tsx",
+      "notes": "Release manual paragraph focus."
+    },
+    {
+      "id": "SURF-092",
+      "surface": "stage.auto",
+      "kind": "protocol command",
+      "application": "Vibe Coders Bible",
+      "location": "Mnehmos/vibe-coders-bible@cb032732158f615331e00c27f688a3c847c0a97c:site/src/components/Stagehand.tsx",
+      "notes": "Alias/path to automatic focus mode."
+    },
+    {
+      "id": "SURF-093",
+      "surface": "stage.highlight",
+      "kind": "protocol command",
+      "application": "Vibe Coders Bible",
+      "location": "Mnehmos/vibe-coders-bible@cb032732158f615331e00c27f688a3c847c0a97c:site/src/components/Stagehand.tsx",
+      "notes": "Highlight DOM element containing text."
+    },
+    {
+      "id": "SURF-094",
+      "surface": "stage.highlight.off",
+      "kind": "protocol command",
+      "application": "Vibe Coders Bible",
+      "location": "Mnehmos/vibe-coders-bible@cb032732158f615331e00c27f688a3c847c0a97c:site/src/components/Stagehand.tsx",
+      "notes": "Remove one/all text highlights."
+    },
+    {
+      "id": "SURF-095",
+      "surface": "stage.clear",
+      "kind": "protocol command",
+      "application": "Vibe Coders Bible",
+      "location": "Mnehmos/vibe-coders-bible@cb032732158f615331e00c27f688a3c847c0a97c:site/src/components/Stagehand.tsx",
+      "notes": "Clear manual focus and highlights."
+    },
+    {
+      "id": "SURF-096",
+      "surface": "stage.diagram",
+      "kind": "protocol command",
+      "application": "Vibe Coders Bible",
+      "location": "Mnehmos/vibe-coders-bible@cb032732158f615331e00c27f688a3c847c0a97c:site/src/components/Stagehand.tsx",
+      "notes": "Show diagram asset."
+    },
+    {
+      "id": "SURF-097",
+      "surface": "stage.diagram.off",
+      "kind": "protocol command",
+      "application": "Vibe Coders Bible",
+      "location": "Mnehmos/vibe-coders-bible@cb032732158f615331e00c27f688a3c847c0a97c:site/src/components/Stagehand.tsx",
+      "notes": "Hide diagram asset."
+    },
+    {
+      "id": "SURF-098",
+      "surface": "parseScript",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-099",
+      "surface": "parseCommandString",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-100",
+      "surface": "StreamingParser",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-101",
+      "surface": "applyEntityProposeCommand",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-102",
+      "surface": "canonicalizeCommandEntityRefs",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-103",
+      "surface": "executeStagehandCommand",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-104",
+      "surface": "validateCommand",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-105",
+      "surface": "validateCommands",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-106",
+      "surface": "COMMAND_SCHEMAS",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-107",
+      "surface": "CommandAction",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-108",
+      "surface": "StagehandCommand",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-109",
+      "surface": "ScriptSegment",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-110",
+      "surface": "CommandSchema",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-111",
+      "surface": "CanonicalStagehandCommand",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-112",
+      "surface": "CommandValidationResult",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-113",
+      "surface": "CanonicalizeCommandOptions",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-114",
+      "surface": "CanonicalizeCommandResult",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-115",
+      "surface": "EntityResolutionMode",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-116",
+      "surface": "ExecuteStagehandCommandOptions",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-117",
+      "surface": "StagehandRuntimeEvent",
+      "kind": "module export",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/index.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-118",
+      "surface": "narration.started",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-119",
+      "surface": "narration.ended",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-120",
+      "surface": "narration.interrupted",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-121",
+      "surface": "caption",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-122",
+      "surface": "effect.committed",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-123",
+      "surface": "board.revision.committed",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-124",
+      "surface": "avatar.anchor.reached",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-125",
+      "surface": "projector.state",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-126",
+      "surface": "media.ready",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-127",
+      "surface": "media.failed",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-128",
+      "surface": "beat.started",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-129",
+      "surface": "beat.completed",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-130",
+      "surface": "lesson.awaiting_student",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-131",
+      "surface": "lesson.choice.selected",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-132",
+      "surface": "lesson.resumed",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-133",
+      "surface": "lesson.objective",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-134",
+      "surface": "lesson.assessed",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-135",
+      "surface": "lesson.completed",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-136",
+      "surface": "room.mode",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-137",
+      "surface": "safe_failure",
+      "kind": "public event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-138",
+      "surface": "stream.chunk",
+      "kind": "private production event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-139",
+      "surface": "segment.parsed",
+      "kind": "private production event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-140",
+      "surface": "command.accepted",
+      "kind": "private production event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-141",
+      "surface": "command.rejected",
+      "kind": "private production event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-142",
+      "surface": "gate.waited",
+      "kind": "private production event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-143",
+      "surface": "provider.request",
+      "kind": "private production event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-144",
+      "surface": "provider.response",
+      "kind": "private production event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-145",
+      "surface": "diagnostic",
+      "kind": "private production event",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:src/stagehand/events.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-146",
+      "surface": "invalid_command",
+      "kind": "runtime event",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/runtime.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-147",
+      "surface": "unresolved_refs",
+      "kind": "runtime event",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/runtime.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-148",
+      "surface": "entity_proposed",
+      "kind": "runtime event",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/runtime.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-149",
+      "surface": "proposal_rejected",
+      "kind": "runtime event",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/runtime.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-150",
+      "surface": "scene_command",
+      "kind": "runtime event",
+      "application": "Clio",
+      "location": "Mnehmos/clio@03b1e1fff2254f5f97947ea249ad84827118136e:src/stagehand/runtime.ts",
+      "notes": ""
+    },
+    {
+      "id": "SURF-151",
+      "surface": "OPENAI_API_KEY",
+      "kind": "environment/config key",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:.env.example",
+      "notes": ""
+    },
+    {
+      "id": "SURF-152",
+      "surface": "OPENROUTER_API_KEY",
+      "kind": "environment/config key",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:.env.example",
+      "notes": ""
+    },
+    {
+      "id": "SURF-153",
+      "surface": "VC_DIRECTOR_MODEL",
+      "kind": "environment/config key",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:.env.example",
+      "notes": ""
+    },
+    {
+      "id": "SURF-154",
+      "surface": "VC_TTS_VOICE",
+      "kind": "environment/config key",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:.env.example",
+      "notes": ""
+    },
+    {
+      "id": "SURF-155",
+      "surface": "VC_TTS_MODEL",
+      "kind": "environment/config key",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:.env.example",
+      "notes": ""
+    },
+    {
+      "id": "SURF-156",
+      "surface": "VC_TTS_SPEED",
+      "kind": "environment/config key",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:.env.example",
+      "notes": ""
+    },
+    {
+      "id": "SURF-157",
+      "surface": "VC_MEDIA_PROVIDER",
+      "kind": "environment/config key",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:.env.example",
+      "notes": ""
+    },
+    {
+      "id": "SURF-158",
+      "surface": "VC_COMFY_URL",
+      "kind": "environment/config key",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:.env.example",
+      "notes": ""
+    },
+    {
+      "id": "SURF-159",
+      "surface": "VC_MINIMAX_BASE_URL",
+      "kind": "environment/config key",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:.env.example",
+      "notes": ""
+    },
+    {
+      "id": "SURF-160",
+      "surface": "VC_MINIMAX_MODEL",
+      "kind": "environment/config key",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:.env.example",
+      "notes": ""
+    },
+    {
+      "id": "SURF-161",
+      "surface": "VC_MINIMAX_API_KEY",
+      "kind": "environment/config key",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:.env.example",
+      "notes": ""
+    },
+    {
+      "id": "SURF-162",
+      "surface": "VC_MEDIA_DEADLINE_MS",
+      "kind": "environment/config key",
+      "application": "Virtual Classroom",
+      "location": "Mnehmos/virtual-classroom@cd7253608297efd57921c965b7440f4d4081842f:.env.example",
+      "notes": ""
+    },
+    {
+      "id": "SURF-163",
+      "surface": "Stagehand bracket grammar",
+      "kind": "wire/file format",
+      "application": "Clio/Virtual Classroom",
+      "location": "multiple",
+      "notes": "[action arg key=value] mixed inline with narration"
+    },
+    {
+      "id": "SURF-164",
+      "surface": "Compound blocks",
+      "kind": "wire/file format",
+      "application": "Clio/Virtual Classroom",
+      "location": "multiple",
+      "notes": "batch / sequence / parallel / beat plus closers"
+    },
+    {
+      "id": "SURF-165",
+      "surface": "Beat agent object",
+      "kind": "wire/file format",
+      "application": "Clio",
+      "location": "multiple",
+      "notes": "beat_id + narration + visual_intent + stagehand_sequence.steps"
+    },
+    {
+      "id": "SURF-166",
+      "surface": "StagehandTrace",
+      "kind": "wire/file format",
+      "application": "Virtual Classroom",
+      "location": "multiple",
+      "notes": "timestamped public and private event arrays"
+    },
+    {
+      "id": "SURF-167",
+      "surface": "Chess annotation grammar",
+      "kind": "wire/file format",
+      "application": "LLM-Chess",
+      "location": "multiple",
+      "notes": "[arrow]/[highlight]/[circle]/[move]"
+    },
+    {
+      "id": "SURF-168",
+      "surface": "VCB presenter grammar",
+      "kind": "wire/file format",
+      "application": "Vibe Coders Bible",
+      "location": "multiple",
+      "notes": "[stage.<type> key=value] word-index anchored"
+    }
+  ]
+}

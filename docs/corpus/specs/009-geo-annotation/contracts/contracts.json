@@ -1,0 +1,107 @@
+{
+  "feature": "FEAT-008",
+  "name": "Geospatial Highlighting & Annotation",
+  "surface_contracts": [
+    {
+      "id": "CTR-009",
+      "surface": "SURF-009",
+      "action": "map.highlight",
+      "host": "Clio",
+      "behavior": "Highlight an entity.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-010",
+      "surface": "SURF-010",
+      "action": "map.spotlight",
+      "host": "Clio",
+      "behavior": "Dim scene except target aperture.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-011",
+      "surface": "SURF-011",
+      "action": "map.label",
+      "host": "Clio",
+      "behavior": "Attach/update an entity label.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-012",
+      "surface": "SURF-012",
+      "action": "map.clear",
+      "host": "Clio",
+      "behavior": "Clear classes of transient map state.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-013",
+      "surface": "SURF-013",
+      "action": "map.arrow",
+      "host": "Clio",
+      "behavior": "Great-circle directed connector.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-014",
+      "surface": "SURF-014",
+      "action": "map.circle",
+      "host": "Clio",
+      "behavior": "Ring an entity.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-015",
+      "surface": "SURF-015",
+      "action": "map.line",
+      "host": "Clio",
+      "behavior": "Great-circle undirected connector.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-043",
+      "surface": "SURF-043",
+      "action": "highlight.region",
+      "host": "Clio",
+      "behavior": "Semantic region highlight (v2).",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-044",
+      "surface": "SURF-044",
+      "action": "highlight.location",
+      "host": "Clio",
+      "behavior": "Semantic point highlight (v2).",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-045",
+      "surface": "SURF-045",
+      "action": "label.show",
+      "host": "Clio",
+      "behavior": "Semantic label primitive (v2).",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-046",
+      "surface": "SURF-046",
+      "action": "route.draw",
+      "host": "Clio",
+      "behavior": "Semantic route primitive (v2).",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    }
+  ],
+  "api_contracts": [],
+  "divergences": []
+}

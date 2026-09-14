@@ -1,0 +1,80 @@
+{
+  "feature": "FEAT-007",
+  "name": "Geospatial Camera & View Framing",
+  "surface_contracts": [
+    {
+      "id": "CTR-005",
+      "surface": "SURF-005",
+      "action": "map.view",
+      "host": "Clio",
+      "behavior": "Set camera coordinate/zoom.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-006",
+      "surface": "SURF-006",
+      "action": "map.focus",
+      "host": "Clio",
+      "behavior": "Focus camera on one registered entity.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-007",
+      "surface": "SURF-007",
+      "action": "map.fit",
+      "host": "Clio",
+      "behavior": "Frame multiple entities or explicit bounds.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-008",
+      "surface": "SURF-008",
+      "action": "map.mode",
+      "host": "Clio",
+      "behavior": "Switch rhetorical map mode.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-040",
+      "surface": "SURF-040",
+      "action": "camera.center",
+      "host": "Clio",
+      "behavior": "Semantic camera centering primitive (v2).",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-041",
+      "surface": "SURF-041",
+      "action": "camera.focus_region",
+      "host": "Clio",
+      "behavior": "Semantic region framing primitive (v2).",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-042",
+      "surface": "SURF-042",
+      "action": "camera.establish_globe",
+      "host": "Clio",
+      "behavior": "Globe-scale establishing camera (v2).",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-047",
+      "surface": "SURF-047",
+      "action": "camera.follow_marker",
+      "host": "Clio",
+      "behavior": "Set/clear chase-camera policy.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    }
+  ],
+  "api_contracts": [],
+  "divergences": []
+}

@@ -1,0 +1,71 @@
+{
+  "feature": "FEAT-014",
+  "name": "Classroom Projector & Media Orchestration",
+  "surface_contracts": [
+    {
+      "id": "CTR-072",
+      "surface": "SURF-072",
+      "action": "projector.prepare",
+      "host": "Virtual Classroom",
+      "behavior": "Prepare media source asynchronously.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-073",
+      "surface": "SURF-073",
+      "action": "projector.lower",
+      "host": "Virtual Classroom",
+      "behavior": "Lower projection screen.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-074",
+      "surface": "SURF-074",
+      "action": "projector.source",
+      "host": "Virtual Classroom",
+      "behavior": "Attach prepared source.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-075",
+      "surface": "SURF-075",
+      "action": "projector.play",
+      "host": "Virtual Classroom",
+      "behavior": "Play source.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-076",
+      "surface": "SURF-076",
+      "action": "projector.wait",
+      "host": "Virtual Classroom",
+      "behavior": "Wait for media/interval.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-077",
+      "surface": "SURF-077",
+      "action": "projector.pause",
+      "host": "Virtual Classroom",
+      "behavior": "Pause source.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-078",
+      "surface": "SURF-078",
+      "action": "projector.raise",
+      "host": "Virtual Classroom",
+      "behavior": "Raise screen.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    }
+  ],
+  "api_contracts": [],
+  "divergences": []
+}

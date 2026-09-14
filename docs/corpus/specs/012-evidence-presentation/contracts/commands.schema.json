@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FEAT-011 command envelope",
+  "type": "object",
+  "required": [
+    "action",
+    "args",
+    "kwargs",
+    "raw"
+  ],
+  "properties": {
+    "action": {
+      "enum": [
+        "chat.say",
+        "source.show",
+        "source.hide",
+        "scene.fade",
+        "scene.title",
+        "asset.show",
+        "asset.clear"
+      ]
+    },
+    "args": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "kwargs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "raw": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "x-stagehand-note": "Per-action recovered behavior and exact source binding are in contracts.json/spec.md; registry implementation must generate stricter per-action validators."
+}

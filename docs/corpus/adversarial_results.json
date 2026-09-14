@@ -1,0 +1,82 @@
+{
+  "count": 11,
+  "cases": [
+    {
+      "id": "A-001",
+      "name": "unknown action rejected",
+      "kind": "adversarial",
+      "status": "pass",
+      "duration_ms": 0.021
+    },
+    {
+      "id": "A-002",
+      "name": "missing-bracket control not spoken as control",
+      "kind": "adversarial",
+      "status": "pass",
+      "duration_ms": 0.165
+    },
+    {
+      "id": "A-003",
+      "name": "compound atomicity fails on invalid inner",
+      "kind": "adversarial",
+      "status": "pass",
+      "duration_ms": 0.146
+    },
+    {
+      "id": "A-004",
+      "name": "unterminated quote hard fails",
+      "kind": "adversarial",
+      "status": "pass",
+      "duration_ms": 0.286
+    },
+    {
+      "id": "A-005",
+      "name": "claim.show contract drift remains rejected",
+      "kind": "adversarial",
+      "status": "pass",
+      "duration_ms": 0.096
+    },
+    {
+      "id": "A-006",
+      "name": "timecursor missing at is rejected by pinned schema",
+      "kind": "adversarial",
+      "status": "pass",
+      "duration_ms": 0.071
+    },
+    {
+      "id": "A-007",
+      "name": "readiness timeout resolves rather than deadlocks",
+      "kind": "adversarial",
+      "status": "pass",
+      "duration_ms": 15.451
+    },
+    {
+      "id": "A-008",
+      "name": "readiness invalidation marks stale waiter",
+      "kind": "adversarial",
+      "status": "pass",
+      "duration_ms": 5.882
+    },
+    {
+      "id": "A-009",
+      "name": "public/private trace partition",
+      "kind": "adversarial",
+      "status": "pass",
+      "duration_ms": 0.623
+    },
+    {
+      "id": "A-010",
+      "name": "schema registry generates authoring digest",
+      "kind": "adversarial",
+      "status": "pass",
+      "duration_ms": 0.158
+    },
+    {
+      "id": "A-011",
+      "name": "generic core schema contains no host state namespaces",
+      "kind": "adversarial",
+      "status": "pass",
+      "duration_ms": 0.104
+    }
+  ]
+}

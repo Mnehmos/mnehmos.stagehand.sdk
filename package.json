@@ -1,0 +1,37 @@
+{
+  "name": "mnehmos-stagehand-sdk",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Headless, model-agnostic mixed-stream compiler/runtime that turns untrusted narration-plus-control into validated, traceable, synchronized host effects.",
+  "license": "MIT",
+  "packageManager": "pnpm@10.7.0",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "packages/compatibility/*",
+    "plugins/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "check": "pnpm run check:corpus && pnpm run check:constitution && pnpm run check:ids && pnpm run check:workspaces && pnpm run check:boundaries && pnpm run typecheck && pnpm run test",
+    "check:corpus": "node tools/corpus.mjs",
+    "check:constitution": "node tools/constitution.mjs",
+    "check:ids": "node tools/v2-ids.mjs",
+    "check:workspaces": "node tools/workspaces.mjs",
+    "check:boundaries": "node tools/boundaries.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "seed:constitution": "node tools/constitution.mjs --write",
+    "seed:ledger": "node tools/v2-ids.mjs --write",
+    "seed:workspaces": "node tools/workspaces.mjs --write",
+    "seed": "pnpm run seed:ledger && pnpm run seed:workspaces && pnpm run seed:constitution"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.11",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  }
+}

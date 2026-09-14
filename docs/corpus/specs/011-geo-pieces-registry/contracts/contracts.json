@@ -1,0 +1,66 @@
+{
+  "feature": "FEAT-010",
+  "name": "World Pieces & Controlled Registry Proposals",
+  "surface_contracts": [
+    {
+      "id": "CTR-020",
+      "surface": "SURF-020",
+      "action": "piece.place",
+      "host": "Clio",
+      "behavior": "Place/update globe-anchored simulation piece.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-021",
+      "surface": "SURF-021",
+      "action": "piece.move",
+      "host": "Clio",
+      "behavior": "Move/restyle a piece.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-022",
+      "surface": "SURF-022",
+      "action": "piece.remove",
+      "host": "Clio",
+      "behavior": "Remove one piece.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-023",
+      "surface": "SURF-023",
+      "action": "piece.clear",
+      "host": "Clio",
+      "behavior": "Clear pieces.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-028",
+      "surface": "SURF-028",
+      "action": "entity.propose",
+      "host": "Clio",
+      "behavior": "Propose a new registry entity.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-108",
+      "surface": "SURF-101",
+      "name": "applyEntityProposeCommand",
+      "kind": "module export",
+      "host": "Clio"
+    }
+  ],
+  "api_contracts": [
+    {
+      "id": "CTR-108",
+      "description": "applyEntityProposeCommand",
+      "owner": "FEAT-010"
+    }
+  ],
+  "divergences": []
+}

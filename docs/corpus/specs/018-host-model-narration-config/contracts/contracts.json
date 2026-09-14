@@ -1,0 +1,9 @@
+{
+  "feature": "FEAT-018",
+  "name": "Host Model & Narration Configuration",
+  "surface_contracts": [],
+  "api_contracts": [],
+  "divergences": [
+    "DIV-009"
+  ]
+}

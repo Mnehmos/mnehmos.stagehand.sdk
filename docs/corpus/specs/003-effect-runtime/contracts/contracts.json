@@ -1,0 +1,95 @@
+{
+  "feature": "FEAT-003",
+  "name": "Effect Compilation, Resolution & Safe Execution",
+  "surface_contracts": [
+    {
+      "id": "CTR-107",
+      "surface": "SURF-102",
+      "name": "canonicalizeCommandEntityRefs",
+      "kind": "module export",
+      "host": "Clio"
+    },
+    {
+      "id": "CTR-106",
+      "surface": "SURF-103",
+      "name": "executeStagehandCommand",
+      "kind": "module export",
+      "host": "Clio"
+    },
+    {
+      "id": "CTR-114",
+      "surface": "SURF-111",
+      "name": "CanonicalStagehandCommand",
+      "kind": "module export",
+      "host": "Clio"
+    },
+    {
+      "id": "CTR-116",
+      "surface": "SURF-113",
+      "name": "CanonicalizeCommandOptions",
+      "kind": "module export",
+      "host": "Clio"
+    },
+    {
+      "id": "CTR-117",
+      "surface": "SURF-114",
+      "name": "CanonicalizeCommandResult",
+      "kind": "module export",
+      "host": "Clio"
+    },
+    {
+      "id": "CTR-118",
+      "surface": "SURF-115",
+      "name": "EntityResolutionMode",
+      "kind": "module export",
+      "host": "Clio"
+    },
+    {
+      "id": "CTR-119",
+      "surface": "SURF-116",
+      "name": "ExecuteStagehandCommandOptions",
+      "kind": "module export",
+      "host": "Clio"
+    }
+  ],
+  "api_contracts": [
+    {
+      "id": "CTR-106",
+      "description": "executeStagehandCommand",
+      "owner": "FEAT-003"
+    },
+    {
+      "id": "CTR-107",
+      "description": "canonicalizeCommandEntityRefs",
+      "owner": "FEAT-003"
+    },
+    {
+      "id": "CTR-114",
+      "description": "CanonicalStagehandCommand type",
+      "owner": "FEAT-003"
+    },
+    {
+      "id": "CTR-116",
+      "description": "CanonicalizeCommandOptions type",
+      "owner": "FEAT-003"
+    },
+    {
+      "id": "CTR-117",
+      "description": "CanonicalizeCommandResult type",
+      "owner": "FEAT-003"
+    },
+    {
+      "id": "CTR-118",
+      "description": "EntityResolutionMode type",
+      "owner": "FEAT-003"
+    },
+    {
+      "id": "CTR-119",
+      "description": "ExecuteStagehandCommandOptions type",
+      "owner": "FEAT-003"
+    }
+  ],
+  "divergences": [
+    "DIV-007"
+  ]
+}

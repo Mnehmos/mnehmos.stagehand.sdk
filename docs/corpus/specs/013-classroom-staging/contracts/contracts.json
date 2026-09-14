@@ -1,0 +1,80 @@
+{
+  "feature": "FEAT-013",
+  "name": "Classroom Avatar, Room & Camera Staging",
+  "surface_contracts": [
+    {
+      "id": "CTR-052",
+      "surface": "SURF-052",
+      "action": "avatar.move",
+      "host": "Virtual Classroom",
+      "behavior": "Move teacher to semantic anchor.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-053",
+      "surface": "SURF-053",
+      "action": "avatar.look",
+      "host": "Virtual Classroom",
+      "behavior": "Aim teacher gaze.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-054",
+      "surface": "SURF-054",
+      "action": "avatar.gesture",
+      "host": "Virtual Classroom",
+      "behavior": "Play semantic teaching gesture.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-055",
+      "surface": "SURF-055",
+      "action": "avatar.point",
+      "host": "Virtual Classroom",
+      "behavior": "Point at committed board element.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-056",
+      "surface": "SURF-056",
+      "action": "avatar.face",
+      "host": "Virtual Classroom",
+      "behavior": "Set facial expression.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-079",
+      "surface": "SURF-079",
+      "action": "room.lights",
+      "host": "Virtual Classroom",
+      "behavior": "Change lighting zone/state.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-080",
+      "surface": "SURF-080",
+      "action": "room.mode",
+      "host": "Virtual Classroom",
+      "behavior": "Set semantic classroom mode.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-081",
+      "surface": "SURF-081",
+      "action": "camera.focus",
+      "host": "Virtual Classroom",
+      "behavior": "Focus student camera.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    }
+  ],
+  "api_contracts": [],
+  "divergences": []
+}

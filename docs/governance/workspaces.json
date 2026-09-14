@@ -1,0 +1,122 @@
+{
+  "$comment": "Declarative workspace skeleton from docs/corpus/31_REBUILD_PLAN.md. tools/workspaces.mjs materialises it; tools/boundaries.mjs derives the dependency graph from owner_features via docs/governance/v2-ids.json, so internal dependency edges are never hand-maintained.",
+  "root": {
+    "packageManager": "pnpm@10.7.0",
+    "node": ">=20.11.0",
+    "typescript": "^5.6.0"
+  },
+  "workspaces": [
+    {
+      "dir": "packages/core",
+      "name": "@stagehand/core",
+      "layer": "core",
+      "kind": "package",
+      "owner_features": ["FEAT-004"],
+      "description": "Canonical effect IR, compound/beat choreography types, and the public assembly surface."
+    },
+    {
+      "dir": "packages/parser",
+      "name": "@stagehand/parser",
+      "layer": "core",
+      "kind": "package",
+      "owner_features": ["FEAT-001"],
+      "description": "Mixed-stream lexer and parser for narration-plus-control input, batch and streaming."
+    },
+    {
+      "dir": "packages/registry",
+      "name": "@stagehand/registry",
+      "layer": "core",
+      "kind": "package",
+      "owner_features": ["FEAT-002"],
+      "description": "Single-source capability registry driving validation, introspection, and authoring help."
+    },
+    {
+      "dir": "packages/runtime",
+      "name": "@stagehand/runtime",
+      "layer": "core",
+      "kind": "package",
+      "owner_features": ["FEAT-003"],
+      "description": "Effect compilation, semantic reference resolution, and authorized commit through a host adapter."
+    },
+    {
+      "dir": "packages/trace",
+      "name": "@stagehand/trace",
+      "layer": "core",
+      "kind": "package",
+      "owner_features": ["FEAT-005"],
+      "description": "Separate public and production event channels plus the versioned replay envelope."
+    },
+    {
+      "dir": "packages/readiness",
+      "name": "@stagehand/readiness",
+      "layer": "core",
+      "kind": "package",
+      "owner_features": ["FEAT-006"],
+      "description": "Deadline-bounded, generation-stamped synchronization gates for asynchronous host effects."
+    },
+    {
+      "dir": "packages/authoring",
+      "name": "@stagehand/authoring",
+      "layer": "core",
+      "kind": "package",
+      "owner_features": ["FEAT-004", "FEAT-011"],
+      "description": "Author-facing helpers: capability introspection digests, receipt linting, and choreography authoring types."
+    },
+    {
+      "dir": "packages/compatibility/llm-chess",
+      "name": "@stagehand/compatibility-llm-chess",
+      "layer": "compatibility",
+      "kind": "package",
+      "owner_features": ["FEAT-016"],
+      "description": "Opt-in compatibility producer for the LLM-Chess annotation dialect, including quarantined inference."
+    },
+    {
+      "dir": "plugins/whiteboard",
+      "name": "@stagehand/plugin-whiteboard",
+      "layer": "plugin",
+      "kind": "plugin",
+      "owner_features": ["FEAT-012"],
+      "description": "Reusable screen-space explanatory canvas: text, math, shapes, counting, erasure, reveal."
+    },
+    {
+      "dir": "plugins/geo-clio",
+      "name": "@stagehand/plugin-geo-clio",
+      "layer": "plugin",
+      "kind": "plugin",
+      "owner_features": ["FEAT-007", "FEAT-008", "FEAT-009", "FEAT-010", "FEAT-011"],
+      "description": "Geospatial camera, annotation, layers, pieces, and evidence presentation."
+    },
+    {
+      "dir": "plugins/classroom",
+      "name": "@stagehand/plugin-classroom",
+      "layer": "plugin",
+      "kind": "plugin",
+      "owner_features": ["FEAT-013", "FEAT-014", "FEAT-015"],
+      "description": "Embodied classroom staging, projector/media orchestration, and lesson state."
+    },
+    {
+      "dir": "plugins/chess",
+      "name": "@stagehand/plugin-chess",
+      "layer": "plugin",
+      "kind": "plugin",
+      "owner_features": ["FEAT-016"],
+      "description": "Chess annotation compatibility plugin: dialect handling and chess-legality validation."
+    },
+    {
+      "dir": "plugins/dom-presenter",
+      "name": "@stagehand/plugin-dom-presenter",
+      "layer": "plugin",
+      "kind": "plugin",
+      "owner_features": ["FEAT-017"],
+      "description": "Word-anchored DOM presentation: focus, highlight, clear, and diagram choreography."
+    },
+    {
+      "dir": "examples/virtual-classroom-host",
+      "name": "@stagehand/example-virtual-classroom-host",
+      "layer": "example",
+      "kind": "example",
+      "owner_features": ["FEAT-018"],
+      "description": "Reference host keeping model-provider and TTS selection outside the SDK core."
+    }
+  ]
+}

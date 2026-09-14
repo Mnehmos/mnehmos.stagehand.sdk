@@ -1,0 +1,540 @@
+{
+  "$comment": "Authoritative v2 identity allocation. Transcribed from the GitHub implementation graph (issue #1 and feature issues #10-#27). v2 identity ranges supersede the per-surface Pass-9 corpus IDs; the corpus remains the content seed for authoring v2 requirement statements. Do not edit ranges without a corresponding issue-graph change.",
+  "scheme": "v2",
+  "declared_by": {
+    "roadmap": "https://github.com/Mnehmos/mnehmos.stagehand.sdk/issues/1",
+    "feature_issues": "https://github.com/Mnehmos/mnehmos.stagehand.sdk/issues/10..#27"
+  },
+  "bounds": {
+    "fr": { "from": 168, "to": 266, "count": 99 },
+    "test": { "from": 168, "to": 229, "count": 62 },
+    "task": { "from": 19, "to": 111, "count": 93 }
+  },
+  "superseded": {
+    "fr": { "from": 1, "to": 167, "count": 167 },
+    "test": { "from": 1, "to": 167, "count": 167 },
+    "task": { "from": 1, "to": 18, "count": 18 },
+    "policy": "Superseded Pass-9 identities are frozen aliases into docs/corpus/. They must never be minted again for new work. Live specs, tasks, and tests use v2 identities only."
+  },
+  "features": [
+    {
+      "feature": "FEAT-001",
+      "issue": 10,
+      "milestone_issue": 3,
+      "milestone": "M1",
+      "rebuild_plan_milestone": "M1",
+      "name": "Mixed-Stream Parsing & Syntax",
+      "tier": "T0",
+      "packages": ["packages/parser"],
+      "deps_issue_graph": [],
+      "deps_corpus": [],
+      "v2": {
+        "fr": { "from": 168, "to": 174 },
+        "test": { "from": 168, "to": 170 },
+        "tasks": [
+          { "id": "T-019", "title": "Core command/segment types" },
+          { "id": "T-020", "title": "Lexer + command parser" },
+          { "id": "T-021", "title": "Batch script parser + compounds" },
+          { "id": "T-022", "title": "Streaming parser on same machinery" },
+          { "id": "T-023", "title": "Bare-command quarantine/recovery" },
+          { "id": "T-024", "title": "Parser fuzz + golden corpus" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-168", "criterion": "Golden quoted/apostrophe/LaTeX/whitespace/nested-compound/chunk-boundary corpus" },
+        { "id": "TEST-169", "criterion": "Replay VC missing-bracket incident; assert zero control tokens reach narration" },
+        { "id": "TEST-170", "criterion": "Batch-vs-stream fuzz over randomized chunk boundaries" }
+      ]
+    },
+    {
+      "feature": "FEAT-002",
+      "issue": 11,
+      "milestone_issue": 3,
+      "milestone": "M1",
+      "rebuild_plan_milestone": "M2",
+      "name": "Capability Registry, Validation & Introspection",
+      "tier": "T0",
+      "packages": ["packages/registry"],
+      "deps_issue_graph": ["FEAT-001"],
+      "deps_corpus": ["FEAT-001"],
+      "v2": {
+        "fr": { "from": 175, "to": 180 },
+        "test": { "from": 171, "to": 173 },
+        "tasks": [
+          { "id": "T-025", "title": "Registry data model" },
+          { "id": "T-026", "title": "Schema lookup/introspection" },
+          { "id": "T-027", "title": "Structural validator" },
+          { "id": "T-028", "title": "Pluggable validation stages" },
+          { "id": "T-029", "title": "Registry consistency test harness" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-171", "criterion": "Schema/introspection bijection" },
+        { "id": "TEST-172", "criterion": "Required/optional kwargs + defaults property tests across recovered schemas" },
+        { "id": "TEST-173", "criterion": "Unknown-action and enum/numeric/duration adversarial corpus" }
+      ]
+    },
+    {
+      "feature": "FEAT-003",
+      "issue": 12,
+      "milestone_issue": 3,
+      "milestone": "M1",
+      "rebuild_plan_milestone": "M3",
+      "name": "Effect Compilation, Resolution & Safe Execution",
+      "tier": "T0",
+      "packages": ["packages/runtime"],
+      "deps_issue_graph": ["FEAT-001", "FEAT-002"],
+      "deps_corpus": ["FEAT-001", "FEAT-002"],
+      "v2": {
+        "fr": { "from": 181, "to": 186 },
+        "test": { "from": 174, "to": 176 },
+        "tasks": [
+          { "id": "T-030", "title": "Canonical command/effect types" },
+          { "id": "T-031", "title": "Resolver interface + canonicalizer" },
+          { "id": "T-032", "title": "Plugin compiler-pass interface" },
+          { "id": "T-033", "title": "Transactional executor" },
+          { "id": "T-034", "title": "Fake host + mutation-safety tests" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-174", "criterion": "Rejected commands cause zero fake-host mutations" },
+        { "id": "TEST-175", "criterion": "Semantic-command compiler parity against Clio v2->v1 mappings" },
+        { "id": "TEST-176", "criterion": "Reference-resolution fuzzing for stale/missing/ambiguous ids" }
+      ]
+    },
+    {
+      "feature": "FEAT-004",
+      "issue": 13,
+      "milestone_issue": 4,
+      "milestone": "M2",
+      "rebuild_plan_milestone": "M4",
+      "name": "Compound Choreography & Beat IR",
+      "tier": "T0",
+      "packages": ["packages/core", "packages/authoring"],
+      "deps_issue_graph": ["FEAT-001", "FEAT-002", "FEAT-003"],
+      "deps_corpus": ["FEAT-001", "FEAT-002", "FEAT-003"],
+      "v2": {
+        "fr": { "from": 187, "to": 192 },
+        "test": { "from": 177, "to": 180 },
+        "tasks": [
+          { "id": "T-035", "title": "Compound AST + parser folding" },
+          { "id": "T-036", "title": "Atomic compound validator" },
+          { "id": "T-037", "title": "Sequence/parallel scheduler metadata" },
+          { "id": "T-038", "title": "Beat object/report helpers" },
+          { "id": "T-039", "title": "Compound adversarial tests" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-177", "criterion": "Nested compound parser goldens" },
+        { "id": "TEST-178", "criterion": "Atomic rejection with mutation-counting fake host" },
+        { "id": "TEST-179", "criterion": "Sequence/parallel timing metadata independent of wall clock" },
+        { "id": "TEST-180", "criterion": "Beat round-trip to agent-facing Beat object" }
+      ]
+    },
+    {
+      "feature": "FEAT-005",
+      "issue": 14,
+      "milestone_issue": 4,
+      "milestone": "M2",
+      "rebuild_plan_milestone": "M3",
+      "name": "Trace, Replay & Diagnostics",
+      "tier": "T0",
+      "packages": ["packages/trace"],
+      "deps_issue_graph": ["FEAT-003"],
+      "deps_corpus": ["FEAT-003"],
+      "v2": {
+        "fr": { "from": 193, "to": 198 },
+        "test": { "from": 181, "to": 184 },
+        "tasks": [
+          { "id": "T-040", "title": "Event bus + typed channels" },
+          { "id": "T-041", "title": "Versioned trace schema/serializer" },
+          { "id": "T-042", "title": "Replay runner" },
+          { "id": "T-043", "title": "Migrator registry" },
+          { "id": "T-044", "title": "Privacy/ordering tests" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-181", "criterion": "Public/private leakage canary corpus" },
+        { "id": "TEST-182", "criterion": "Serialize->load->replay without model access" },
+        { "id": "TEST-183", "criterion": "Version mismatch + migrator registry" },
+        { "id": "TEST-184", "criterion": "Interruption ordering across narration/readiness/effects" }
+      ]
+    },
+    {
+      "feature": "FEAT-006",
+      "issue": 15,
+      "milestone_issue": 4,
+      "milestone": "M2",
+      "rebuild_plan_milestone": "M4",
+      "name": "Readiness & Synchronization",
+      "tier": "T0",
+      "packages": ["packages/readiness"],
+      "deps_issue_graph": ["FEAT-003", "FEAT-005"],
+      "deps_corpus": ["FEAT-003", "FEAT-005"],
+      "v2": {
+        "fr": { "from": 199, "to": 203 },
+        "test": { "from": 185, "to": 187 },
+        "tasks": [
+          { "id": "T-045", "title": "ReadinessGate primitive" },
+          { "id": "T-046", "title": "Injectable clock/deadline policy" },
+          { "id": "T-047", "title": "Generation invalidation" },
+          { "id": "T-048", "title": "Trace integration + race tests" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-185", "criterion": "Fake-clock timeout" },
+        { "id": "TEST-186", "criterion": "Generation invalidation race with late settle callbacks" },
+        { "id": "TEST-187", "criterion": "Multi-key partial settlement" }
+      ]
+    },
+    {
+      "feature": "FEAT-007",
+      "issue": 16,
+      "milestone_issue": 6,
+      "milestone": "M4",
+      "rebuild_plan_milestone": "M6",
+      "name": "Geospatial Camera & View Framing",
+      "tier": "T1",
+      "packages": ["plugins/geo-clio"],
+      "deps_issue_graph": ["FEAT-002", "FEAT-003"],
+      "deps_corpus": ["FEAT-002", "FEAT-003"],
+      "v2": {
+        "fr": { "from": 204, "to": 208 },
+        "test": { "from": 188, "to": 190 },
+        "tasks": [
+          { "id": "T-049", "title": "Geo camera command schemas" },
+          { "id": "T-050", "title": "Geo entity resolver" },
+          { "id": "T-051", "title": "Semantic camera compiler" },
+          { "id": "T-052", "title": "Camera host adapter interface" },
+          { "id": "T-053", "title": "Camera contract tests" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-188", "criterion": "All eight camera/view action schemas" },
+        { "id": "TEST-189", "criterion": "Entity resolution proves no invented coordinates" },
+        { "id": "TEST-190", "criterion": "Semantic-v2->primitive compiler goldens" }
+      ]
+    },
+    {
+      "feature": "FEAT-008",
+      "issue": 17,
+      "milestone_issue": 6,
+      "milestone": "M4",
+      "rebuild_plan_milestone": "M6",
+      "name": "Geospatial Highlighting & Annotation",
+      "tier": "T1",
+      "packages": ["plugins/geo-clio"],
+      "deps_issue_graph": ["FEAT-007"],
+      "deps_corpus": ["FEAT-007"],
+      "v2": {
+        "fr": { "from": 209, "to": 213 },
+        "test": { "from": 191, "to": 193 },
+        "tasks": [
+          { "id": "T-054", "title": "Annotation command schemas" },
+          { "id": "T-055", "title": "Primitive annotation reducer/effects" },
+          { "id": "T-056", "title": "Semantic annotation compiler" },
+          { "id": "T-057", "title": "Scoped clear semantics" },
+          { "id": "T-058", "title": "Annotation contract tests" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-191", "criterion": "Primitive annotation schema/default corpus" },
+        { "id": "TEST-192", "criterion": "Semantic->primitive compiler goldens" },
+        { "id": "TEST-193", "criterion": "Scoped-clear state transitions" }
+      ]
+    },
+    {
+      "feature": "FEAT-009",
+      "issue": 18,
+      "milestone_issue": 6,
+      "milestone": "M4",
+      "rebuild_plan_milestone": "M6",
+      "name": "Geospatial Layers, Flows & Temporal Overlays",
+      "tier": "T1",
+      "packages": ["plugins/geo-clio"],
+      "deps_issue_graph": ["FEAT-007", "FEAT-008"],
+      "deps_corpus": ["FEAT-007", "FEAT-008"],
+      "v2": {
+        "fr": { "from": 214, "to": 218 },
+        "test": { "from": 194, "to": 196 },
+        "tasks": [
+          { "id": "T-059", "title": "Layer/flow schemas and state" },
+          { "id": "T-060", "title": "Overlay registry + stack semantics" },
+          { "id": "T-061", "title": "Basemap one-of contract" },
+          { "id": "T-062", "title": "Tagged timecursor contract" },
+          { "id": "T-063", "title": "Temporal/overlay tests" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-194", "criterion": "Recovered schema/default tests for all eight actions" },
+        { "id": "TEST-195", "criterion": "Basemap one-of validation" },
+        { "id": "TEST-196", "criterion": "Timecursor live/at conformance; upstream contradiction recorded as accepted divergence" }
+      ],
+      "divergences": ["DIV-002"]
+    },
+    {
+      "feature": "FEAT-010",
+      "issue": 19,
+      "milestone_issue": 6,
+      "milestone": "M4",
+      "rebuild_plan_milestone": "M6",
+      "name": "World Pieces & Controlled Registry Proposals",
+      "tier": "T1",
+      "packages": ["plugins/geo-clio"],
+      "deps_issue_graph": ["FEAT-002", "FEAT-003", "FEAT-007"],
+      "deps_corpus": ["FEAT-002", "FEAT-003", "FEAT-007"],
+      "v2": {
+        "fr": { "from": 219, "to": 223 },
+        "test": { "from": 197, "to": 199 },
+        "tasks": [
+          { "id": "T-064", "title": "Piece command schemas" },
+          { "id": "T-065", "title": "Piece state reducer + asset lookup" },
+          { "id": "T-066", "title": "Entity proposal validator/review hook" },
+          { "id": "T-067", "title": "Proposal trace events" },
+          { "id": "T-068", "title": "Piece/proposal tests" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-197", "criterion": "Piece place/move/remove/clear schema and state corpus" },
+        { "id": "TEST-198", "criterion": "Proposal review path; no silent entity creation" },
+        { "id": "TEST-199", "criterion": "Proposal/rejection trace behavior" }
+      ]
+    },
+    {
+      "feature": "FEAT-011",
+      "issue": 20,
+      "milestone_issue": 6,
+      "milestone": "M4",
+      "rebuild_plan_milestone": "M6",
+      "name": "Evidence, Sources & Scene Presentation",
+      "tier": "T1",
+      "packages": ["plugins/geo-clio", "packages/authoring"],
+      "deps_issue_graph": ["FEAT-003", "FEAT-005"],
+      "deps_corpus": ["FEAT-003", "FEAT-005"],
+      "v2": {
+        "fr": { "from": 224, "to": 227 },
+        "test": { "from": 200, "to": 202 },
+        "tasks": [
+          { "id": "T-069", "title": "Presentation command schemas" },
+          { "id": "T-070", "title": "Source/asset state adapter" },
+          { "id": "T-071", "title": "Scene title/fade effects" },
+          { "id": "T-072", "title": "Authoring receipt lint" },
+          { "id": "T-073", "title": "Dead-command regression tests" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-200", "criterion": "Source/asset/title/fade schema/default corpus" },
+        { "id": "TEST-201", "criterion": "Presentation-only mutation test: geo/domain truth unchanged" },
+        { "id": "TEST-202", "criterion": "claim.show remains rejected/dead" }
+      ],
+      "divergences": ["DIV-001"]
+    },
+    {
+      "feature": "FEAT-012",
+      "issue": 21,
+      "milestone_issue": 5,
+      "milestone": "M3",
+      "rebuild_plan_milestone": "M5",
+      "name": "Shared Whiteboard Canvas",
+      "tier": "T1",
+      "packages": ["plugins/whiteboard"],
+      "deps_issue_graph": ["FEAT-002", "FEAT-003", "FEAT-005", "FEAT-006"],
+      "deps_corpus": ["FEAT-002", "FEAT-003"],
+      "v2": {
+        "fr": { "from": 228, "to": 234 },
+        "test": { "from": 203, "to": 207 },
+        "tasks": [
+          { "id": "T-074", "title": "Board document/revision model" },
+          { "id": "T-075", "title": "VC-superset command schemas" },
+          { "id": "T-076", "title": "content_ref resolver hook" },
+          { "id": "T-077", "title": "Truth/thinking reducers" },
+          { "id": "T-078", "title": "Clio compatibility mapping" },
+          { "id": "T-079", "title": "Board target/readiness tests" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-203", "criterion": "Full 21-surface recovered schema conformance" },
+        { "id": "TEST-204", "criterion": "Hide-vs-clear divergence regression" },
+        { "id": "TEST-205", "criterion": "Truth/thinking-layer isolation" },
+        { "id": "TEST-206", "criterion": "content_ref byte-for-byte canonical content" },
+        { "id": "TEST-207", "criterion": "Board target resolution for point/highlight/erase/reveal" }
+      ]
+    },
+    {
+      "feature": "FEAT-013",
+      "issue": 22,
+      "milestone_issue": 7,
+      "milestone": "M5",
+      "rebuild_plan_milestone": "M7",
+      "name": "Classroom Avatar, Room & Camera Staging",
+      "tier": "T1",
+      "packages": ["plugins/classroom"],
+      "deps_issue_graph": ["FEAT-003", "FEAT-005", "FEAT-006", "FEAT-012"],
+      "deps_corpus": ["FEAT-003", "FEAT-005", "FEAT-006"],
+      "v2": {
+        "fr": { "from": 235, "to": 240 },
+        "test": { "from": 208, "to": 211 },
+        "tasks": [
+          { "id": "T-080", "title": "Anchor + staging schemas" },
+          { "id": "T-081", "title": "Avatar/room state validator" },
+          { "id": "T-082", "title": "Board-target pointing resolver" },
+          { "id": "T-083", "title": "Renderer/readiness adapter" },
+          { "id": "T-084", "title": "Accessibility-aware camera policy" },
+          { "id": "T-085", "title": "Staging integration tests" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-208", "criterion": "Staging schema/enumeration corpus" },
+        { "id": "TEST-209", "criterion": "Unknown-anchor and unknown-board-target rejection" },
+        { "id": "TEST-210", "criterion": "Narration resumes only after anchor arrival or deadline" },
+        { "id": "TEST-211", "criterion": "Reduced-motion host policy" }
+      ]
+    },
+    {
+      "feature": "FEAT-014",
+      "issue": 23,
+      "milestone_issue": 7,
+      "milestone": "M5",
+      "rebuild_plan_milestone": "M7",
+      "name": "Classroom Projector & Media Orchestration",
+      "tier": "T1",
+      "packages": ["plugins/classroom"],
+      "deps_issue_graph": ["FEAT-003", "FEAT-005", "FEAT-006", "FEAT-012"],
+      "deps_corpus": ["FEAT-003", "FEAT-005", "FEAT-006"],
+      "v2": {
+        "fr": { "from": 241, "to": 246 },
+        "test": { "from": 212, "to": 215 },
+        "tasks": [
+          { "id": "T-086", "title": "PreparedMedia/provider abstraction" },
+          { "id": "T-087", "title": "Projector command schemas + state machine" },
+          { "id": "T-088", "title": "Readiness/event wiring" },
+          { "id": "T-089", "title": "Media provider adapters" },
+          { "id": "T-090", "title": "Projector failure/deadline tests" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-212", "criterion": "Projector state machine including source-before-ready rejection" },
+        { "id": "TEST-213", "criterion": "Provider failure/deadline proves no lesson deadlock" },
+        { "id": "TEST-214", "criterion": "Board survives lower/raise" },
+        { "id": "TEST-215", "criterion": "Secret redaction in traces" }
+      ]
+    },
+    {
+      "feature": "FEAT-015",
+      "issue": 24,
+      "milestone_issue": 7,
+      "milestone": "M5",
+      "rebuild_plan_milestone": "M7",
+      "name": "Lesson Interaction & Pedagogical State",
+      "tier": "T1",
+      "packages": ["plugins/classroom"],
+      "deps_issue_graph": ["FEAT-003", "FEAT-005", "FEAT-006", "FEAT-012"],
+      "deps_corpus": ["FEAT-003", "FEAT-005", "FEAT-006"],
+      "v2": {
+        "fr": { "from": 247, "to": 253 },
+        "test": { "from": 216, "to": 220 },
+        "tasks": [
+          { "id": "T-091", "title": "Lesson state model/reducer" },
+          { "id": "T-092", "title": "Ask/wait/resume boundaries" },
+          { "id": "T-093", "title": "Choice board-resolution" },
+          { "id": "T-094", "title": "Objective/phase/assessment policies" },
+          { "id": "T-095", "title": "Completion semantics" },
+          { "id": "T-096", "title": "Lesson state tests" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-216", "criterion": "Lesson state-machine goldens" },
+        { "id": "TEST-217", "criterion": "Choice options must resolve to visible board elements" },
+        { "id": "TEST-218", "criterion": "Objective-covered-without-evidence rejection" },
+        { "id": "TEST-219", "criterion": "Model->practice independence policy" },
+        { "id": "TEST-220", "criterion": "Interruption/resume/replay trace" }
+      ]
+    },
+    {
+      "feature": "FEAT-016",
+      "issue": 25,
+      "milestone_issue": 8,
+      "milestone": "M6",
+      "rebuild_plan_milestone": "M8",
+      "name": "Chess Annotation Compatibility",
+      "tier": "T2",
+      "packages": ["plugins/chess", "packages/compatibility/llm-chess"],
+      "deps_issue_graph": ["FEAT-001", "FEAT-002", "FEAT-003"],
+      "deps_corpus": ["FEAT-001", "FEAT-002", "FEAT-003"],
+      "v2": {
+        "fr": { "from": 254, "to": 257 },
+        "test": { "from": 221, "to": 223 },
+        "tasks": [
+          { "id": "T-097", "title": "Explicit chess dialect parser" },
+          { "id": "T-098", "title": "Chess effect validator" },
+          { "id": "T-099", "title": "Optional legacy inference adapter" },
+          { "id": "T-100", "title": "Provenance/confidence tagging" },
+          { "id": "T-101", "title": "Chess compatibility tests" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-221", "criterion": "Golden four-tag corpus" },
+        { "id": "TEST-222", "criterion": "Compatibility-on/off natural-language inference differential" },
+        { "id": "TEST-223", "criterion": "Invalid square/move rejection" }
+      ],
+      "divergences": ["DIV-008"]
+    },
+    {
+      "feature": "FEAT-017",
+      "issue": 26,
+      "milestone_issue": 8,
+      "milestone": "M6",
+      "rebuild_plan_milestone": "M8",
+      "name": "Word-Anchored DOM Presenter Choreography",
+      "tier": "T2",
+      "packages": ["plugins/dom-presenter"],
+      "deps_issue_graph": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-005"],
+      "deps_corpus": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-005"],
+      "v2": {
+        "fr": { "from": 258, "to": 261 },
+        "test": { "from": 224, "to": 226 },
+        "tasks": [
+          { "id": "T-102", "title": "Presenter command schemas" },
+          { "id": "T-103", "title": "DOM presentation state adapter" },
+          { "id": "T-104", "title": "Word/audio timing scheduler" },
+          { "id": "T-105", "title": "TTS control stripping integration" },
+          { "id": "T-106", "title": "Presenter golden tests" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-224", "criterion": "Eight-command presenter state-machine corpus" },
+        { "id": "TEST-225", "criterion": "TTS stripping: zero stage syntax reaches narration" },
+        { "id": "TEST-226", "criterion": "Word-anchor timing with deterministic effect order" }
+      ]
+    },
+    {
+      "feature": "FEAT-018",
+      "issue": 27,
+      "milestone_issue": 7,
+      "milestone": "M5",
+      "rebuild_plan_milestone": "M7",
+      "name": "Host Model & Narration Configuration",
+      "tier": "T3",
+      "packages": ["examples/virtual-classroom-host"],
+      "deps_issue_graph": ["FEAT-013", "FEAT-014", "FEAT-015"],
+      "deps_corpus": ["FEAT-013", "FEAT-014", "FEAT-015"],
+      "v2": {
+        "fr": { "from": 262, "to": 266 },
+        "test": { "from": 227, "to": 229 },
+        "tasks": [
+          { "id": "T-107", "title": "Producer/narration adapter interfaces" },
+          { "id": "T-108", "title": "Example host env loader" },
+          { "id": "T-109", "title": "Fake provider/TTS adapters" },
+          { "id": "T-110", "title": "Secret-redaction tests" },
+          { "id": "T-111", "title": "Provider-independence integration test" }
+        ]
+      },
+      "parity_exits": [
+        { "id": "TEST-227", "criterion": "Core dependency closure imports no provider SDKs" },
+        { "id": "TEST-228", "criterion": "Provider swap yields identical canonical effect traces" },
+        { "id": "TEST-229", "criterion": "Secret canary across trace/diagnostics" }
+      ],
+      "divergences": ["DIV-007", "DIV-009"]
+    }
+  ]
+}

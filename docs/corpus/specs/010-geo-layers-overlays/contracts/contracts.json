@@ -1,0 +1,82 @@
+{
+  "feature": "FEAT-009",
+  "name": "Geospatial Layers, Flows & Temporal Overlays",
+  "surface_contracts": [
+    {
+      "id": "CTR-016",
+      "surface": "SURF-016",
+      "action": "layer.on",
+      "host": "Clio",
+      "behavior": "Enable a named thematic layer.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-017",
+      "surface": "SURF-017",
+      "action": "layer.off",
+      "host": "Clio",
+      "behavior": "Disable a named thematic layer.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-018",
+      "surface": "SURF-018",
+      "action": "flow.animate",
+      "host": "Clio",
+      "behavior": "Animate a route/flow.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-019",
+      "surface": "SURF-019",
+      "action": "flow.clear",
+      "host": "Clio",
+      "behavior": "Clear active flows.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-048",
+      "surface": "SURF-048",
+      "action": "map.overlay.show",
+      "host": "Clio",
+      "behavior": "Activate registered map overlay.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-049",
+      "surface": "SURF-049",
+      "action": "map.overlay.hide",
+      "host": "Clio",
+      "behavior": "Hide one/all overlays.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-050",
+      "surface": "SURF-050",
+      "action": "map.basemap",
+      "host": "Clio",
+      "behavior": "Switch named/registered basemap.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-051",
+      "surface": "SURF-051",
+      "action": "map.timecursor",
+      "host": "Clio",
+      "behavior": "Set overlay time cursor.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    }
+  ],
+  "api_contracts": [],
+  "divergences": [
+    "DIV-002"
+  ]
+}

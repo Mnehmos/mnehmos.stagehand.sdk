@@ -1,0 +1,80 @@
+{
+  "feature": "FEAT-015",
+  "name": "Lesson Interaction & Pedagogical State",
+  "surface_contracts": [
+    {
+      "id": "CTR-082",
+      "surface": "SURF-082",
+      "action": "lesson.ask",
+      "host": "Virtual Classroom",
+      "behavior": "Open free-response question.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-083",
+      "surface": "SURF-083",
+      "action": "lesson.choice",
+      "host": "Virtual Classroom",
+      "behavior": "Open clickable choice question.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-084",
+      "surface": "SURF-084",
+      "action": "lesson.wait",
+      "host": "Virtual Classroom",
+      "behavior": "Pause for student boundary.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-085",
+      "surface": "SURF-085",
+      "action": "lesson.resume",
+      "host": "Virtual Classroom",
+      "behavior": "Resume lesson.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-086",
+      "surface": "SURF-086",
+      "action": "lesson.objective",
+      "host": "Virtual Classroom",
+      "behavior": "Set objective status.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-087",
+      "surface": "SURF-087",
+      "action": "lesson.phase",
+      "host": "Virtual Classroom",
+      "behavior": "Switch model/practice phase.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-088",
+      "surface": "SURF-088",
+      "action": "lesson.assess",
+      "host": "Virtual Classroom",
+      "behavior": "Record/judge answer.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-089",
+      "surface": "SURF-089",
+      "action": "lesson.complete",
+      "host": "Virtual Classroom",
+      "behavior": "Complete lesson.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    }
+  ],
+  "api_contracts": [],
+  "divergences": []
+}

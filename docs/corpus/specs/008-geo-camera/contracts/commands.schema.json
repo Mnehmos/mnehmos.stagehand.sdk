@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FEAT-007 command envelope",
+  "type": "object",
+  "required": [
+    "action",
+    "args",
+    "kwargs",
+    "raw"
+  ],
+  "properties": {
+    "action": {
+      "enum": [
+        "map.view",
+        "map.focus",
+        "map.fit",
+        "map.mode",
+        "camera.center",
+        "camera.focus_region",
+        "camera.establish_globe",
+        "camera.follow_marker"
+      ]
+    },
+    "args": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "kwargs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "raw": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "x-stagehand-note": "Per-action recovered behavior and exact source binding are in contracts.json/spec.md; registry implementation must generate stricter per-action validators."
+}

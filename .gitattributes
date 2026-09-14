@@ -1,0 +1,22 @@
+# Line-ending policy.
+#
+# This repository hashes files as bytes: docs/corpus/SHA256SUMS.txt records the SHA-256 of every
+# corpus file, and `pnpm check:corpus` re-verifies it. A CRLF conversion on checkout would silently
+# invalidate that manifest on any machine with core.autocrlf=true, so the corpus is pinned to
+# byte-exact handling and everything else is normalised to LF.
+
+* text=auto eol=lf
+
+# Frozen artifact set: never convert, in either direction.
+docs/corpus/** -text
+
+# Binary-ish assets.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary

@@ -1,0 +1,46 @@
+{
+  "feature": "FEAT-016",
+  "name": "Chess Annotation Compatibility",
+  "surface_contracts": [
+    {
+      "id": "CTR-001",
+      "surface": "SURF-001",
+      "action": "arrow",
+      "host": "LLM-Chess",
+      "behavior": "Draw an arrow between chess squares; optional color.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-002",
+      "surface": "SURF-002",
+      "action": "highlight",
+      "host": "LLM-Chess",
+      "behavior": "Highlight one chess square; optional color.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-003",
+      "surface": "SURF-003",
+      "action": "circle",
+      "host": "LLM-Chess",
+      "behavior": "Circle one chess square; optional color.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-004",
+      "surface": "SURF-004",
+      "action": "move",
+      "host": "LLM-Chess",
+      "behavior": "Encode a proposed/visualized move between squares; optional promotion.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    }
+  ],
+  "api_contracts": [],
+  "divergences": [
+    "DIV-008"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "feature": "FEAT-011",
+  "name": "Evidence, Sources & Scene Presentation",
+  "surface_contracts": [
+    {
+      "id": "CTR-024",
+      "surface": "SURF-024",
+      "action": "chat.say",
+      "host": "Clio",
+      "behavior": "Open a source-backed narration attribution scope.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-025",
+      "surface": "SURF-025",
+      "action": "source.show",
+      "host": "Clio",
+      "behavior": "Display a source receipt.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-026",
+      "surface": "SURF-026",
+      "action": "source.hide",
+      "host": "Clio",
+      "behavior": "Hide source receipts.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-030",
+      "surface": "SURF-030",
+      "action": "scene.fade",
+      "host": "Clio",
+      "behavior": "Apply broadcast fade overlay.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-031",
+      "surface": "SURF-031",
+      "action": "scene.title",
+      "host": "Clio",
+      "behavior": "Show/clear title/chapter card.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-032",
+      "surface": "SURF-032",
+      "action": "asset.show",
+      "host": "Clio",
+      "behavior": "Display registered/inline evidence asset.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-033",
+      "surface": "SURF-033",
+      "action": "asset.clear",
+      "host": "Clio",
+      "behavior": "Clear evidence assets.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    }
+  ],
+  "api_contracts": [],
+  "divergences": [
+    "DIV-001"
+  ]
+}

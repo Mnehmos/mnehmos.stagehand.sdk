@@ -1,0 +1,13 @@
+{
+  "feature": "FEAT-006",
+  "name": "Readiness & Synchronization",
+  "surface_contracts": [],
+  "api_contracts": [
+    {
+      "id": "CTR-123",
+      "description": "ReadinessGate mark/settle/invalidate/wait",
+      "owner": "FEAT-006"
+    }
+  ],
+  "divergences": []
+}

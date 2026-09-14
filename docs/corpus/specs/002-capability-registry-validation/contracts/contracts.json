@@ -1,0 +1,88 @@
+{
+  "feature": "FEAT-002",
+  "name": "Capability Registry, Validation & Introspection",
+  "surface_contracts": [
+    {
+      "id": "CTR-104",
+      "surface": "SURF-104",
+      "name": "validateCommand",
+      "kind": "module export",
+      "host": "Clio"
+    },
+    {
+      "id": "CTR-105",
+      "surface": "SURF-105",
+      "name": "validateCommands",
+      "kind": "module export",
+      "host": "Clio"
+    },
+    {
+      "id": "CTR-109",
+      "surface": "SURF-106",
+      "name": "COMMAND_SCHEMAS",
+      "kind": "module export",
+      "host": "Clio"
+    },
+    {
+      "id": "CTR-110",
+      "surface": "SURF-107",
+      "name": "CommandAction",
+      "kind": "module export",
+      "host": "Clio"
+    },
+    {
+      "id": "CTR-113",
+      "surface": "SURF-110",
+      "name": "CommandSchema",
+      "kind": "module export",
+      "host": "Clio"
+    },
+    {
+      "id": "CTR-115",
+      "surface": "SURF-112",
+      "name": "CommandValidationResult",
+      "kind": "module export",
+      "host": "Clio"
+    }
+  ],
+  "api_contracts": [
+    {
+      "id": "CTR-104",
+      "description": "Clio validateCommand",
+      "owner": "FEAT-002"
+    },
+    {
+      "id": "CTR-105",
+      "description": "Clio validateCommands",
+      "owner": "FEAT-002"
+    },
+    {
+      "id": "CTR-109",
+      "description": "COMMAND_SCHEMAS registry",
+      "owner": "FEAT-002"
+    },
+    {
+      "id": "CTR-110",
+      "description": "CommandAction type",
+      "owner": "FEAT-002"
+    },
+    {
+      "id": "CTR-113",
+      "description": "CommandSchema type",
+      "owner": "FEAT-002"
+    },
+    {
+      "id": "CTR-115",
+      "description": "CommandValidationResult type",
+      "owner": "FEAT-002"
+    },
+    {
+      "id": "CTR-121",
+      "description": "VC five-layer validateCommand",
+      "owner": "FEAT-002"
+    }
+  ],
+  "divergences": [
+    "DIV-006"
+  ]
+}

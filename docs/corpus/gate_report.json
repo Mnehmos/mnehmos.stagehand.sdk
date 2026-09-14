@@ -1,0 +1,25 @@
+{
+  "project_status": "DONE",
+  "pass_0": {
+    "status": "evidence-closed-not-locally-replayed",
+    "runtime_observed_locally": false,
+    "upstream_runtime_evidence": true,
+    "note": "Complete original hosts could not be cloned through direct Git in the execution container; immutable source/history evidence and local reconstructed-core execution are separated explicitly."
+  },
+  "pass_1": {"status":"pass","enumerated_surfaces":168,"surface_ids_contiguous":true},
+  "pass_2": {"status":"pass","clio_stagehand_path_files":27,"virtual_classroom_stagehand_path_files":10},
+  "pass_3": {"status":"pass","protocol_commands":97,"clio_exports":20,"event_names":33,"vc_env_keys":12},
+  "pass_4": {"status":"pass","portable_entities_modeled":10},
+  "pass_5": {"status":"pass-static-plus-upstream-runtime-evidence","local_original_nfr_measurements":false},
+  "pass_6": {"status":"pass","decisions":13},
+  "pass_7": {
+    "status":"pass-done",
+    "local_harness":"reconstructed-stagehand-core",
+    "local_cases":21,
+    "local_passed":21,
+    "local_failed":0,
+    "golden_cases":10,
+    "adversarial_cases":11,
+    "confirmed_upstream_defects":["claim.show schema drift","map.timecursor live/required-at contradiction"]
+  }
+}

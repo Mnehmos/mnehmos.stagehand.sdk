@@ -1,0 +1,24 @@
+{
+  "name": "@stagehand/runtime",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Effect compilation, semantic reference resolution, and authorized commit through a host adapter.",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@stagehand/parser": "workspace:*",
+    "@stagehand/registry": "workspace:*"
+  }
+}

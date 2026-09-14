@@ -1,0 +1,77 @@
+{
+  "feature": "FEAT-001",
+  "name": "Mixed-Stream Parsing & Syntax",
+  "surface_contracts": [
+    {
+      "id": "CTR-101",
+      "surface": "SURF-098",
+      "name": "parseScript",
+      "kind": "module export",
+      "host": "Clio"
+    },
+    {
+      "id": "CTR-102",
+      "surface": "SURF-099",
+      "name": "parseCommandString",
+      "kind": "module export",
+      "host": "Clio"
+    },
+    {
+      "id": "CTR-103",
+      "surface": "SURF-100",
+      "name": "StreamingParser",
+      "kind": "module export",
+      "host": "Clio"
+    },
+    {
+      "id": "CTR-111",
+      "surface": "SURF-108",
+      "name": "StagehandCommand",
+      "kind": "module export",
+      "host": "Clio"
+    },
+    {
+      "id": "CTR-112",
+      "surface": "SURF-109",
+      "name": "ScriptSegment",
+      "kind": "module export",
+      "host": "Clio"
+    }
+  ],
+  "api_contracts": [
+    {
+      "id": "CTR-101",
+      "description": "parseScript(script: string): ScriptSegment[]",
+      "owner": "FEAT-001"
+    },
+    {
+      "id": "CTR-102",
+      "description": "parseCommandString(raw: string): StagehandCommand | null",
+      "owner": "FEAT-001"
+    },
+    {
+      "id": "CTR-103",
+      "description": "StreamingParser feed/flush mixed-stream parser",
+      "owner": "FEAT-001"
+    },
+    {
+      "id": "CTR-111",
+      "description": "StagehandCommand type",
+      "owner": "FEAT-001"
+    },
+    {
+      "id": "CTR-112",
+      "description": "ScriptSegment type",
+      "owner": "FEAT-001"
+    },
+    {
+      "id": "CTR-124",
+      "description": "VC hardened parseCommandString",
+      "owner": "FEAT-001"
+    }
+  ],
+  "divergences": [
+    "DIV-003",
+    "DIV-004"
+  ]
+}

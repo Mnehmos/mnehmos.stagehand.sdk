@@ -1,0 +1,34 @@
+{
+  "$comment": "Dependency-closure policy for Constitution Article III (core is headless and model-agnostic) and Article IX (plugins own domains). Enforced by tools/boundaries.mjs and covered by tests/boundaries-core.test.mjs.",
+  "layers": {
+    "core": {
+      "mayDependOnLayers": ["core"],
+      "rationale": "core, parser, registry, runtime, trace, readiness, authoring: no renderer, domain, model provider, TTS, or media implementation."
+    },
+    "compatibility": {
+      "mayDependOnLayers": ["core", "compatibility"],
+      "rationale": "Compatibility producers adapt a dialect into core contracts; they must not import plugins."
+    },
+    "plugin": {
+      "mayDependOnLayers": ["core", "compatibility", "plugin"],
+      "rationale": "Plugins own domain state and may share plugin-to-plugin helper contracts, but never hosts."
+    },
+    "example": {
+      "mayDependOnLayers": ["core", "compatibility", "plugin", "example"],
+      "rationale": "Host applications compose everything. Nothing may depend on an example."
+    }
+  },
+  "forbiddenExternalInCore": {
+    "renderers": ["three", "@react-three/*", "react", "react-dom", "vue", "svelte", "@babylonjs/*", "pixi.js"],
+    "maps": ["maplibre-gl", "mapbox-gl", "leaflet", "deck.gl", "@deck.gl/*", "cesium", "@cesium/*", "ol", "@turf/*"],
+    "modelProviders": ["openai", "@anthropic-ai/*", "@google/generative-ai", "@google-cloud/*", "@ai-sdk/*", "openrouter", "cohere-ai", "ollama", "@mistralai/*"],
+    "speech": ["elevenlabs", "@elevenlabs/*", "microsoft-cognitiveservices-speech-sdk", "say", "node-tts"],
+    "media": ["fluent-ffmpeg", "ffmpeg-static", "@ffmpeg/*", "sharp", "canvas"],
+    "dom": ["jsdom", "happy-dom", "linkedom", "cheerio"],
+    "chess": ["chess.js", "cm-chessboard", "chessboardjs", "@lichess-org/*"]
+  },
+  "externalDependencyPolicy": {
+    "core": "deny-list",
+    "note": "Core may use general-purpose runtime dependencies; it may not reach for a renderer, map, provider, speech, media, DOM, or chess implementation. Plugins and examples are unrestricted for external dependencies."
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@stagehand/plugin-geo-clio",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Geospatial camera, annotation, layers, pieces, and evidence presentation.",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@stagehand/registry": "workspace:*",
+    "@stagehand/runtime": "workspace:*",
+    "@stagehand/trace": "workspace:*"
+  }
+}

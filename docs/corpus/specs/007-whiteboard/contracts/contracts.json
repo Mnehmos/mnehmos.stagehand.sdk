@@ -1,0 +1,197 @@
+{
+  "feature": "FEAT-012",
+  "name": "Shared Whiteboard Canvas",
+  "surface_contracts": [
+    {
+      "id": "CTR-034",
+      "surface": "SURF-034",
+      "action": "whiteboard.show",
+      "host": "Clio",
+      "behavior": "Show screen-space whiteboard.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-035",
+      "surface": "SURF-035",
+      "action": "whiteboard.hide",
+      "host": "Clio",
+      "behavior": "Hide whiteboard.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-036",
+      "surface": "SURF-036",
+      "action": "whiteboard.clear",
+      "host": "Clio",
+      "behavior": "Clear whiteboard.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-037",
+      "surface": "SURF-037",
+      "action": "whiteboard.text",
+      "host": "Clio",
+      "behavior": "Place freeform text.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-038",
+      "surface": "SURF-038",
+      "action": "whiteboard.line",
+      "host": "Clio",
+      "behavior": "Draw freeform line.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-039",
+      "surface": "SURF-039",
+      "action": "whiteboard.box",
+      "host": "Clio",
+      "behavior": "Draw box/panel.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-057",
+      "surface": "SURF-057",
+      "action": "whiteboard.show",
+      "host": "Virtual Classroom",
+      "behavior": "Activate board/new page.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-058",
+      "surface": "SURF-058",
+      "action": "whiteboard.hide",
+      "host": "Virtual Classroom",
+      "behavior": "Occlude/deactivate presentation without destroying content.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-059",
+      "surface": "SURF-059",
+      "action": "whiteboard.clear",
+      "host": "Virtual Classroom",
+      "behavior": "Clear board layer/page content.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-060",
+      "surface": "SURF-060",
+      "action": "whiteboard.text",
+      "host": "Virtual Classroom",
+      "behavior": "Commit exact text element.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-061",
+      "surface": "SURF-061",
+      "action": "whiteboard.math",
+      "host": "Virtual Classroom",
+      "behavior": "Commit typeset equation.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-062",
+      "surface": "SURF-062",
+      "action": "whiteboard.line",
+      "host": "Virtual Classroom",
+      "behavior": "Draw line.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-063",
+      "surface": "SURF-063",
+      "action": "whiteboard.box",
+      "host": "Virtual Classroom",
+      "behavior": "Draw box.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-064",
+      "surface": "SURF-064",
+      "action": "whiteboard.arrow",
+      "host": "Virtual Classroom",
+      "behavior": "Draw arrow.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-065",
+      "surface": "SURF-065",
+      "action": "whiteboard.highlight",
+      "host": "Virtual Classroom",
+      "behavior": "Highlight board element/region.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-066",
+      "surface": "SURF-066",
+      "action": "whiteboard.scribble",
+      "host": "Virtual Classroom",
+      "behavior": "Commit thinking-layer scribble.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-067",
+      "surface": "SURF-067",
+      "action": "whiteboard.dots",
+      "host": "Virtual Classroom",
+      "behavior": "Draw countable dots/tokens.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-068",
+      "surface": "SURF-068",
+      "action": "whiteboard.shape",
+      "host": "Virtual Classroom",
+      "behavior": "Draw named geometry.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-069",
+      "surface": "SURF-069",
+      "action": "whiteboard.count",
+      "host": "Virtual Classroom",
+      "behavior": "Count properties/items.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-070",
+      "surface": "SURF-070",
+      "action": "whiteboard.erase",
+      "host": "Virtual Classroom",
+      "behavior": "Erase target.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    },
+    {
+      "id": "CTR-071",
+      "surface": "SURF-071",
+      "action": "whiteboard.reveal",
+      "host": "Virtual Classroom",
+      "behavior": "Reveal concealed target.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    }
+  ],
+  "api_contracts": [],
+  "divergences": []
+}

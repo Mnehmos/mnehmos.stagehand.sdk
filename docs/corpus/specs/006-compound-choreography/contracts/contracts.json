@@ -1,0 +1,23 @@
+{
+  "feature": "FEAT-004",
+  "name": "Compound Choreography & Beat IR",
+  "surface_contracts": [
+    {
+      "id": "CTR-029",
+      "surface": "SURF-029",
+      "action": "mark.clip",
+      "host": "Clio",
+      "behavior": "Mark export moment.",
+      "wire": "bracket-inline mixed stream",
+      "canonical_status": "live"
+    }
+  ],
+  "api_contracts": [
+    {
+      "id": "CTR-125",
+      "description": "VC foldCompoundSegments nested compound parser",
+      "owner": "FEAT-004"
+    }
+  ],
+  "divergences": []
+}

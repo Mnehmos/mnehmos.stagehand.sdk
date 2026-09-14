@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stagehand.mnehmos.dev/schema/core-v1.json",
+  "title": "Stagehand Core IR",
+  "type": "object",
+  "$defs": {
+    "command": {
+      "type": "object",
+      "required": [
+        "action",
+        "args",
+        "kwargs",
+        "raw"
+      ],
+      "properties": {
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "kwargs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "raw": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "textSegment": {
+      "type": "object",
+      "required": [
+        "type",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "text"
+        },
+        "content": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "commandSegment": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/command"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "command"
+            }
+          },
+          "required": [
+            "type"
+          ]
+        }
+      ]
+    },
+    "effect": {
+      "type": "object",
+      "required": [
+        "plugin",
+        "action",
+        "payload"
+      ],
+      "properties": {
+        "plugin": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "object"
+        },
+        "correlationId": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "traceEnvelope": {
+      "type": "object",
+      "required": [
+        "protocolVersion",
+        "schemaSetVersion",
+        "pluginVersions",
+        "sessionId",
+        "startedAt",
+        "publicEvents",
+        "productionEvents"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "type": "string"
+        },
+        "schemaSetVersion": {
+          "type": "string"
+        },
+        "pluginVersions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "adapterVersion": {
+          "type": "string"
+        },
+        "assetManifestHash": {
+          "type": "string"
+        },
+        "sessionId": {
+          "type": "string"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "publicEvents": {
+          "type": "array"
+        },
+        "productionEvents": {
+          "type": "array"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
