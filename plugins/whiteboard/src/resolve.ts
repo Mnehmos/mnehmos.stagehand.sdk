@@ -12,14 +12,14 @@
  */
 
 import type { ValidationError, ValidationStage } from '@stagehand/registry';
-import { CREATING_ACTIONS, TARGET_ACTIONS } from './contracts.js';
+import { TARGET_ACTIONS } from './contracts.js';
 import { elementById, type BoardDocument } from './types.js';
 
 /** Board coordinates live in a recovered 0-100 space. */
 export const BOARD_MIN = 0;
 export const BOARD_MAX = 100;
 
-export { CREATING_ACTIONS, TARGET_ACTIONS };
+export { TARGET_ACTIONS };
 
 export interface BoardResolution {
   readonly ok: boolean;
@@ -93,20 +93,84 @@ export function boardRegistryStage(): ValidationStage {
         });
       }
 
-      // "An element placed off the board is valid syntax and invisible teaching."
+      return errors;
+    },
+  };
+}
+
+/**
+ * The **state-layer** stage, reproduced from the pin's `validateState`.
+ *
+ * Exactly six actions are covered — `whiteboard.text`, `.math`, `.line`, `.box`, `.arrow`,
+ * `.scribble` — and `dots`, `shape`, and `count` deliberately are not: for those the reducer upserts,
+ * so a repeated id is not an error. Two rules, both the pin's:
+ *
+ * - an open board page, because "no board page is open. Call whiteboard.show first";
+ * - a unique id within that page, because "ids are handles the avatar points at later".
+ */
+export function boardStateStage(read: () => BoardDocument): ValidationStage {
+  const REQUIRES_OPEN_BOARD = [
+    'whiteboard.text',
+    'whiteboard.math',
+    'whiteboard.line',
+    'whiteboard.box',
+    'whiteboard.arrow',
+    'whiteboard.scribble',
+  ];
+
+  return {
+    layer: 'state',
+    validate(command): readonly ValidationError[] {
+      const document = read();
+      const kwargs = command.kwargs;
+      const errors: ValidationError[] = [];
+
+      if (REQUIRES_OPEN_BOARD.includes(command.action)) {
+        if (!document.visible) {
+          errors.push({
+            code: 'E_STATE',
+            layer: 'state',
+            message: `${command.action}: no board page is open. Call whiteboard.show first.`,
+          });
+        }
+        const id = kwargs['id'];
+        if (id !== undefined && id !== '' && elementById(document, id) !== undefined) {
+          errors.push({
+            code: 'E_STATE',
+            layer: 'state',
+            message: `${command.action}: board element id "${id}" is already committed. Ids must be unique within a page.`,
+            subject: 'id',
+          });
+        }
+      }
+
+      return errors;
+    },
+  };
+}
+
+/**
+ * The **spatial-layer** stage: the recovered 0-100 board space.
+ *
+ * "An element placed off the board is valid syntax and invisible teaching." Both the horizontal and
+ * the vertical box span are checked; the first version of this stage checked only the horizontal one.
+ */
+export function boardSpatialStage(): ValidationStage {
+  return {
+    layer: 'spatial',
+    validate(command): readonly ValidationError[] {
+      const kwargs = command.kwargs;
+      const errors: ValidationError[] = [];
+
       for (const [xKey, yKey] of [['x', 'y'], ['x1', 'y1'], ['x2', 'y2']] as const) {
         for (const key of [xKey, yKey]) {
           const raw = kwargs[key];
           if (raw === undefined || raw === '') continue;
           const value = Number(raw);
-          if (!Number.isFinite(value)) {
-            errors.push({ code: 'E_SCHEMA', layer: 'registry', message: `${command.action}: ${key}=${raw} is not a number`, subject: key });
-            continue;
-          }
           if (value < BOARD_MIN || value > BOARD_MAX) {
             errors.push({
               code: 'E_SCHEMA',
-              layer: 'registry',
+              layer: 'spatial',
               message: `${command.action}: ${key}=${raw} is outside the 0-100 board space`,
               subject: key,
             });
@@ -115,14 +179,26 @@ export function boardRegistryStage(): ValidationStage {
       }
 
       const width = Number(kwargs['width']);
+      const height = Number(kwargs['height']);
       const centerX = Number(kwargs['x']);
+      const centerY = Number(kwargs['y']);
       if (Number.isFinite(width) && Number.isFinite(centerX)) {
         if (centerX - width / 2 < BOARD_MIN || centerX + width / 2 > BOARD_MAX) {
           errors.push({
             code: 'E_SCHEMA',
-            layer: 'registry',
+            layer: 'spatial',
             message: `${command.action}: box spans past the board edge horizontally`,
             subject: 'width',
+          });
+        }
+      }
+      if (Number.isFinite(height) && Number.isFinite(centerY)) {
+        if (centerY - height / 2 < BOARD_MIN || centerY + height / 2 > BOARD_MAX) {
+          errors.push({
+            code: 'E_SCHEMA',
+            layer: 'spatial',
+            message: `${command.action}: box spans past the board edge vertically`,
+            subject: 'height',
           });
         }
       }
@@ -163,23 +239,6 @@ export function boardResolutionStage(read: () => BoardDocument): ValidationStage
           });
         } else {
           errors.push(...resolveTarget(document, target).errors);
-        }
-      }
-
-      // `whiteboard.scribble` takes an optional `target` its schema does not declare as an entity, and
-      // the pinned reducer *falls back* when it cannot be found rather than refusing. An earlier
-      // version rejected an unknown scribble target, which was a behaviour change presented as parity.
-      if (CREATING_ACTIONS.includes(command.action)) {
-        const id = kwargs['id'];
-        // A commit that reuses an id would produce two elements the board cannot tell apart, and every
-        // later target reference would resolve to whichever sorting happens to favour.
-        if (id !== undefined && id !== '' && elementById(document, id) !== undefined) {
-          errors.push({
-            code: 'E_STATE',
-            layer: 'state',
-            message: `Board element "${id}" already exists`,
-            subject: 'id',
-          });
         }
       }
 

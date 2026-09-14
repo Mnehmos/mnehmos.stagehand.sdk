@@ -271,7 +271,10 @@ export function reduce(document: BoardDocument, change: BoardChange, now: number
         elements.push(element);
       }
       if (!changed) return document;
-      return { ...withActiveElements(document, elements), revision: document.revision + 1 };
+      // Reveal progress and mark expiry are transient display state. The pinned advanceReveals() and
+      // expireMarks() mutate page elements WITHOUT touching doc.revision, because the revision tracks
+      // committed board changes rather than renderer-frame progression.
+      return withActiveElements(document, elements);
     }
   }
 }
@@ -305,8 +308,11 @@ const SHAPE_COUNTABLE: Readonly<Record<string, { readonly corners: number; reado
   trapezoid: { corners: 4, sides: 4 },
   pentagon: { corners: 5, sides: 5 },
   hexagon: { corners: 6, sides: 6 },
-  circle: { corners: 0, sides: 1 },
-  oval: { corners: 0, sides: 1 },
+  // A circle has no corners and no sides: the pinned geometry returns no vertices for circle/oval,
+  // and side midpoints need at least three corners. `what=sides` on a circle therefore counts nothing
+  // and the command no-ops rather than numbering one thing.
+  circle: { corners: 0, sides: 0 },
+  oval: { corners: 0, sides: 0 },
 };
 
 export function countableTotal(element: BoardElement, what: string): number {

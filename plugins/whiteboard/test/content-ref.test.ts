@@ -34,6 +34,8 @@ function pluginWithPack(): WhiteboardPlugin {
 
 /** Run a command the way the runtime does: registry validation with the stages, then commit. */
 function run(plugin: WhiteboardPlugin, action: string, kwargs: Record<string, string>): boolean {
+  // The state stage requires an open board, so open one the way a real lesson would.
+  plugin.commit([{ plugin: 'whiteboard', action: 'whiteboard.show', payload: { args: [], kwargs: {}, refs: [] } }]);
   const command = { action, args: [], kwargs, raw: `[${action}]` };
   const verdict = validateCommand(plugin.registry, command, { stages: plugin.stages });
   if (!verdict.ok) return false;

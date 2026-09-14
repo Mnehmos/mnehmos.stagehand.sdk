@@ -14,7 +14,9 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { activeElements, boardResolutionStage, isTargetAction, resolveTarget, TARGET_ACTIONS, WhiteboardPlugin } from '../src/index.js';
+import { validateCommand } from '@stagehand/registry';
+import { activeElements, isTargetAction, resolveTarget, WhiteboardPlugin } from '../src/index.js';
+import { CORE_SCHEMAS } from './fixtures.js';
 
 function seeded(): WhiteboardPlugin {
   const plugin = new WhiteboardPlugin();
@@ -25,7 +27,12 @@ function seeded(): WhiteboardPlugin {
   return plugin;
 }
 
-const stageFor = (plugin: WhiteboardPlugin) => boardResolutionStage(() => plugin.document);
+const stageFor = (plugin: WhiteboardPlugin) => ({
+  validate: (command: { action: string; args: string[]; kwargs: Record<string, string>; raw: string }, context = {}) => {
+    const verdict = validateCommand(makeRegistry(), command, { stages: [...plugin.stages, boardStateStage(() => plugin.document)], context });
+    return verdict.ok ? [] : verdict.errors;
+  },
+});
 
 function targetCommand(action: string, target: string) {
   return { action, args: [], kwargs: { target }, raw: `[${action}]` };

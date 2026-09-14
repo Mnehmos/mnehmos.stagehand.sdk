@@ -23,7 +23,7 @@ import { ReadinessGate, type WaitResult } from '@stagehand/readiness';
 import type { CanonicalEffect, EffectCommitter, ValidationStage } from '@stagehand/runtime';
 import type { EventBus } from '@stagehand/trace';
 import { THINKING_ACTIONS, WHITEBOARD_SCHEMAS } from './contracts.js';
-import { boardRegistryStage, boardResolutionStage, NULL_CONTENT_RESOLVER, type ContentResolver } from './resolve.js';
+import { boardRegistryStage, boardResolutionStage, boardSpatialStage, boardStateStage, NULL_CONTENT_RESOLVER, type ContentResolver } from './resolve.js';
 import {
   activeElements,
   activePage,
@@ -176,9 +176,9 @@ export class WhiteboardPlugin implements EffectCommitter {
     return boardResolutionStage(() => this.#document);
   }
 
-  /** Both contributed stages, in pipeline order: registry-layer rules, then entity resolution. */
+  /** All four contributed stages, in pipeline order. */
   get stages(): readonly ValidationStage[] {
-    return [boardRegistryStage(), this.stage];
+    return [boardRegistryStage(), this.stage, boardStateStage(() => this.#document), boardSpatialStage()];
   }
 
   /** Resolve a lesson-content reference the way the runtime does. */
