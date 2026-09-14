@@ -1,53 +1,66 @@
-# FEAT-012 behavior sweep — state at this commit
+# FEAT-012 behavior sweep — intermediate state, not converged
 
-Second review (#21) required behavior parity, not just schema parity: **the corpus owns identity, the
-pinned schema owns wire shape, the pinned reducers/validators/runtime/tests own observable behavior.**
+Commit `0d18b13`. M3 open, M4 held.
 
-## Done in this sweep
+## What the third review found
 
-Source read (fetched, hashed, not committed): `src/board/document.ts`, `src/board/document.test.ts`,
-`src/stagehand/validator.ts`, `src/app/runtime.ts` at `cd7253608297efd57921c965b7440f4d4081842f`.
+The first reconvergence fixed the schema contracts but only opened `types.ts`. The maintainer opened
+the behavior-bearing files (`src/board/document.ts`, `src/stagehand/validator.ts`, `src/app/runtime.ts`,
+`src/board/document.test.ts`) and found a second layer of drift that the schema-conformance test
+could not see.
 
-- **Named pages.** `pages: [{id,title,elements}]` + `activePageId`. `show` creates a page, reopens one
-  with content intact, updates a title.
-- **No-op discipline.** A change that does nothing returns the same document, so the revision counts
-  *changes* rather than commands (unknown target, uncountable source, clear that wipes nothing).
-- **`content_ref`** resolves through an injected `ContentResolver` (lesson content pack), not against
-  the board. A miss yields empty content and still commits, per the pin's `?? ''`. Inline
-  `text`/`latex` is mutually exclusive with a ref, failed at the **registry** layer.
-- **`arrow` is a thinking mark**, per `base('thinking', ...)` at document.ts:480.
-- **`count`** computes a countable total (`dots`→items, `shape`→corners/sides), no-ops when the total
-  is 0, and records `from`/`paceMs`/`budgetMs`.
-- **`highlight`** carries `expiresAt`, with `duration=0` meaning permanent (`null`).
-- **`reveal`** arms `reveal`/`revealMs` and `advance(ms)` progresses it; no invented `concealed` flip.
-- **0–100 board space** validated, including box edge span. **Entity resolution** accepts
-  `target ?? args[0]`. Optional `scribble target=` no longer rejects an unknown target (the pin falls
-  back).
-- The public kwarg is **`conceal`**; a test had been built on a `concealed` kwarg no producer could send.
-- Two core fixes the sweep exposed: `ValidationStage` may contribute at the **registry** layer, and
-  `validateCommand` was silently skipping contributed registry-layer stages entirely.
+## What landed in this commit
 
-`pnpm check` exit 0, 9 gates, **473 tests**.
+Seven behavioral corrections, all from the pinned reducer and validator:
 
-## NOT done — do not claim convergence
+1. **Spatial rules moved to a contributed `spatial` stage**, matching the pin's five-layer order. The
+   vertical box-span check (which the SDK was missing) is present alongside the horizontal one.
+2. **Duplicate-id rejection moved to a contributed `state` stage**, so `ValidationResult.layer` is
+   now `state` rather than the wrong `entity`. Narrowed to the pin's exact action set
+   (text/math/line/box/arrow/scribble) — dots/shape/count are excluded because the pin's reducer
+   upserts those instead.
+3. **Active-board requirement** added to the same state stage for those six actions.
+4. **`advance()` and `expireMarks()` no longer increment the revision.** The pin's versions mutate
+   display state without touching `doc.revision`, because the revision tracks committed changes, not
+   renderer-frame progression.
+5. **Write-on timing.** Every created element now carries `reveal: 0` plus its action-specific
+   `revealMs` (text 700, math 1100, line 500, box 600, arrow 600, highlight 300, scribble 700,
+   dots 900, shape 800, count `max(400, total × pace)`).
+6. **`countableTotal` corrected** for circle/oval: sides are 0, not 1. The pin's geometry returns no
+   vertices for shapes with fewer than three corners, and side midpoints need three.
+7. **Center-based bounds.** Line/arrow use `boundsForSpan` (midpoint + span, min thickness 2) and box
+   stores the supplied center. No corner conversion.
 
-1. **Behavior-file provenance is not yet recorded.** The four files were fetched and read, but their
-   commit/path/hash are not in `docs/evidence/`. The evidence file still covers `types.ts` only.
-2. **No per-action behavior/failure matrix** for the 15 actions, which the review requires as an
-   artifact.
-3. **The live spec is not updated.** `FR-231` still lists three thinking producers (scribble,
-   highlight, count) and omits `arrow`; the behaviour matrix lacks the no-op, page, expiry, reveal,
-   spatial, and content-ref rows.
-4. **`DIV-012` is referenced in a code comment but never recorded.** Delegated: automatic
-   placement/collision-avoidance layout (document.ts `layOut`/`spotFor`) is renderer-side; the
-   headless contract carries the producer's declared bounds instead. Parity consequence needs stating.
-   Any other retained divergence needs a live DIV too.
-5. **No mutation evidence** for the new behaviors (arrow layer, no-op revision, count total, page
-   reopen, XOR rule).
-6. **TEST-204..207 do not yet drive every case through the full public path** — the sweep moved
-   several tests onto registry+stages+committer, but the review asks for that consistently.
+Two core fixes the sweep exposed:
+
+- `ValidationStage` forbade a plugin contributing at the registry layer. Changed to allow it, because
+  the pin fails content_ref-plus-inline at the registry layer and a plugin owning that command family
+  should not have to surface it at a later layer.
+- `validateCommand` only ran contributed stages in the `default` branch of its layer switch, so a
+  registry-layer contribution was silently skipped. Fixed to run each layer's built-in rules followed
+  by that layer's contributed stages.
+
+## What is NOT done — do not claim convergence
+
+1. **Typecheck errors in test files.** The pages-model change (document.elements →
+   activeElements(document)) cascaded through four test files and the imports/exports have not all
+   been reconciled.
+2. **Test failures.** The state stage requires `document.visible`, which tests that don't call
+   `whiteboard.show` first will fail on. The content-ref `run()` helper was updated to show the board
+   first, but the other test files have not been.
+3. **Behavior-file provenance** (commit/path/hash for document.ts, validator.ts, runtime.ts,
+   document.test.ts) is not yet in `docs/evidence/`.
+4. **No per-action behavior/failure matrix** artifact.
+5. **The live spec has not been corrected** for arrow-as-thinking, no-op revision, pages, write-on
+   timing, count totals, spatial layer, content_ref seam, or center-based bounds.
+6. **DIV-012** (layout/bounds divergence) is referenced in a code comment but not recorded.
+   **DIV-013** (broader FEAT-002 grammars: minutes in durations, rgb/rgba colours, case-insensitive
+   enums) is needed too.
+7. **No mutation evidence** for the new behaviors.
 
 ## Next step
 
-Record the provenance and the behavior matrix, correct FR-228..234, record DIV-012, then run the
-mutations and post the evidence on #21. M3 stays open and M4 stays held until that lands.
+Fix the typecheck and test failures (the state-stage `visible` check is the cascade root: either add
+`whiteboard.show` to every test that creates elements, or restructure the state stage to not depend
+on visibility). Then work through the remaining items above in order. Each one should be verified by
+mutation before the next is started.
