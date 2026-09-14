@@ -62,9 +62,18 @@ export interface DurationValue {
   readonly maxMs?: number;
 }
 
-/** CSS-style color. */
+/**
+ * A colour: hex or `rgb()`, plus optionally a set of **named** colours the owning schema declares.
+ *
+ * The `named` list exists because the pinned host sources define a colour kwarg as "a named ink
+ * colour or an explicit `#rrggbb`", and the names are a host-wide palette rather than a core
+ * vocabulary. Declaring them per schema keeps the palette where it belongs (a plugin) while letting
+ * the value type express "name or hex" — which a bare enum could not, since an enum would reject the
+ * hex form that the same kwarg also accepts.
+ */
 export interface ColorValue {
   readonly kind: 'color';
+  readonly named?: readonly string[];
 }
 
 /**

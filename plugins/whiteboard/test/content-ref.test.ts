@@ -13,7 +13,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { boardResolutionStage, resolveContentRef, WhiteboardPlugin } from '../src/index.js';
+import { boardResolutionStage, resolveContentRef, WHITEBOARD_SCHEMAS, WhiteboardPlugin } from '../src/index.js';
 
 const LATEX = String.raw`\frac{a}{b} \cdot \left( x^{2} \right)`;
 
@@ -157,5 +157,99 @@ describe('TEST-206 / content tracks the document', () => {
       },
     ]);
     expect(plugin.contentFor('eq1')).toBeUndefined();
+  });
+});
+
+describe('TEST-206 / content_ref reaches the resolver through registry validation', () => {
+  /**
+   * The first version of this file exercised `boardResolutionStage` directly, which proved the helper
+   * worked and not that a producer could ever get there. With `content_ref` missing from the public
+   * schema, an end-to-end command was rejected *before* the stage — so the helper was unreachable and
+   * the test could not tell. These cases go through `validateCommand` with the plugin's own registry
+   * and stages, which is the path a command actually travels.
+   */
+  it('accepts a command carrying content_ref and commits the referenced bytes', async () => {
+    const { validateCommand } = await import('@stagehand/registry');
+    const plugin = new WhiteboardPlugin();
+
+    // Commit the source element whose content will be referenced.
+    const source = String.raw`\sum_{i=1}^{n} i^{2}`;
+    plugin.commit([
+      {
+        plugin: 'whiteboard',
+        action: 'whiteboard.math',
+        payload: { args: [], kwargs: { id: 'src', latex: source }, refs: [] },
+      },
+    ]);
+
+    // A second command references it instead of re-typing it.
+    const command = {
+      action: 'whiteboard.math',
+      args: [],
+      kwargs: { id: 'copy', content_ref: 'src' },
+      raw: '[whiteboard.math id=copy content_ref=src]',
+    };
+
+    const verdict = validateCommand(plugin.registry, command, { stages: plugin.stages });
+    expect(verdict.ok, verdict.ok ? '' : JSON.stringify(verdict.errors)).toBe(true);
+
+    plugin.commit([
+      { plugin: 'whiteboard', action: 'whiteboard.math', payload: { args: [], kwargs: command.kwargs, refs: [] } },
+    ]);
+
+    // Byte for byte, and identical to what the source element holds.
+    expect(plugin.contentFor('copy')).toBe(source);
+    expect(plugin.contentFor('copy')).toBe(plugin.contentFor('src'));
+  });
+
+  it('rejects an end-to-end command whose content_ref does not resolve', async () => {
+    const { validateCommand } = await import('@stagehand/registry');
+    const plugin = new WhiteboardPlugin();
+
+    const verdict = validateCommand(
+      plugin.registry,
+      {
+        action: 'whiteboard.text',
+        args: [],
+        kwargs: { id: 't', content_ref: 'never-committed' },
+        raw: '[whiteboard.text id=t content_ref=never-committed]',
+      },
+      { stages: plugin.stages },
+    );
+
+    expect(verdict.ok).toBe(false);
+    if (!verdict.ok) {
+      expect(verdict.layer).toBe('entity');
+      expect(verdict.errors.some((error) => error.code === 'E_UNRESOLVED_REF' && error.subject === 'content_ref')).toBe(true);
+    }
+  });
+
+  it('accepts content_ref on text as well as math, since the source declares it on both', async () => {
+    const { validateCommand } = await import('@stagehand/registry');
+    const plugin = new WhiteboardPlugin();
+    plugin.commit([
+      {
+        plugin: 'whiteboard',
+        action: 'whiteboard.text',
+        payload: { args: [], kwargs: { id: 'para', text: 'long prose' }, refs: [] },
+      },
+    ]);
+
+    for (const action of ['whiteboard.text', 'whiteboard.math']) {
+      const verdict = validateCommand(
+        plugin.registry,
+        { action, args: [], kwargs: { id: `${action}-copy`, content_ref: 'para' }, raw: `[${action}]` },
+        { stages: plugin.stages },
+      );
+      expect(verdict.ok, `${action} rejected a content_ref the source declares`).toBe(true);
+    }
+  });
+
+  it('declares content_ref on exactly the two actions the source declares it on', () => {
+    const withContentRef = WHITEBOARD_SCHEMAS.filter(
+      (schema) => schema.optionalKwargs?.['content_ref'] !== undefined,
+    ).map((schema) => schema.action);
+    expect(withContentRef.sort()).toEqual(['whiteboard.math', 'whiteboard.text']);
+    expect(WHITEBOARD_SCHEMAS.find((s) => s.action === 'whiteboard.text')?.optionalKwargs?.['content_ref']?.default).toBe('');
   });
 });

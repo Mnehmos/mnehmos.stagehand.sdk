@@ -31,20 +31,42 @@
  */
 
 export {
-  CLIO_COMPATIBILITY,
-  SURFACE_MANIFEST,
+  BOOLEANS,
+  CLEAR_LAYERS,
+  contractFor,
+  COUNTABLES,
+  CREATING_ACTIONS,
+  DOT_ARRANGEMENTS,
+  DOT_TOKENS,
+  HIGHLIGHT_COLORS,
+  INK_COLORS,
+  RECOVERED_CONTRACTS,
+  schemaFor,
+  SHAPES,
+  TARGET_ACTIONS,
+  TEXT_SIZES,
+  THINKING_ACTIONS,
   WHITEBOARD_ACTIONS,
   WHITEBOARD_SCHEMAS,
+  type ContractAuthoring,
+  type EntityKind,
+  type RecoveredContract,
+} from './contracts.js';
+
+export {
+  CLIO_COMPATIBILITY,
+  CLIO_CROSS_CUTTING,
+  SURFACE_MANIFEST,
+  type CompatibilityDifference,
+  type CompatibilityEntry,
   type SurfaceBinding,
 } from './schemas.js';
 
 export {
   boardResolutionStage,
-  CREATING_ACTIONS,
   isTargetAction,
   resolveContentRef,
   resolveTarget,
-  TARGET_ACTIONS,
   type BoardResolution,
 } from './resolve.js';
 

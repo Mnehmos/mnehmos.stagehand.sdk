@@ -9,8 +9,9 @@ reconciles to these; no new task numbers are minted.
   - [x] Monotonic revision, advancing only on a committed change
   - [x] Plugin-owned state; nothing in core holds or imports it
 
-- [x] **T-075** VC-superset command schemas — FR-229
-  - [x] All 15 distinct actions registered with typed schemas
+- [x] **T-075** VC-superset command schemas — FR-229 (reconverged against pinned source)
+  - [x] All 15 contracts recovered from the pinned source, with required/optional kwargs, defaults, enums, numeric/duration/colour fields, entity kind, and settle budget
+  - [x] Schemas derived from one contract table, so a contract cannot disagree with the registry
   - [x] Surface manifest covering all 21 owned surfaces, six of them sharing an action
   - [x] Six shared actions registered once, not once per host
 
@@ -21,7 +22,7 @@ reconciles to these; no new task numbers are minted.
 
 - [x] **T-077** Truth/thinking reducers — FR-231
   - [x] Element layer is part of the element, not of the view
-  - [x] `scribble` commits to `thinking`; other content commits to `truth`
+  - [x] `scribble`, `highlight`, and `count` produce thinking-surface marks; content actions produce truth
   - [x] Layer-scoped reads; clearing one layer leaves the other
 
 - [x] **T-078** Clio compatibility mapping — FR-234
@@ -30,8 +31,8 @@ reconciles to these; no new task numbers are minted.
   - [x] `hide` mapped to occlusion, never to `clear`
 
 - [x] **T-079** Board target/readiness tests — FR-233
-  - [x] Target resolution for `highlight`, `erase`, `reveal`
-  - [x] Unknown target reported as unresolved across all three
+  - [x] Target resolution for `highlight`, `count`, `erase`, `reveal`; `scribble` resolves an optional target
+  - [x] Unknown target reported as unresolved across all four
   - [x] Revision unchanged by a rejected command
 
 ## Parity exits

@@ -16,8 +16,8 @@ import { CapabilityRegistry } from '@stagehand/registry';
 import { ReadinessGate, type WaitResult } from '@stagehand/readiness';
 import type { CanonicalEffect, EffectCommitter, ValidationStage } from '@stagehand/runtime';
 import type { EventBus } from '@stagehand/trace';
+import { THINKING_ACTIONS, WHITEBOARD_SCHEMAS } from './contracts.js';
 import { boardResolutionStage } from './resolve.js';
-import { WHITEBOARD_SCHEMAS } from './schemas.js';
 import {
   elementById,
   EMPTY_BOARD,
@@ -34,6 +34,8 @@ const SHOW = 'whiteboard.show';
 const CLEAR = 'whiteboard.clear';
 const ERASE = 'whiteboard.erase';
 const REVEAL = 'whiteboard.reveal';
+const COUNT = 'whiteboard.count';
+const HIGHLIGHT = 'whiteboard.highlight';
 
 /** Element kind implied by each creating action. */
 const KIND_OF_ACTION: Readonly<Record<string, BoardElementKind>> = {
@@ -50,27 +52,67 @@ const KIND_OF_ACTION: Readonly<Record<string, BoardElementKind>> = {
 };
 
 /**
- * Which layer an action commits to (FR-231).
+ * Marks that carry no `id` of their own and are named from the element they annotate.
  *
- * A table rather than a conditional, because the rule is "rough working is not material" and a table
- * makes the one exception visible at a glance. Everything commits to `truth` except `scribble`.
+ * `highlight` is the case: the source gives it `target` and no `id`, because a highlight is a mark
+ * *over* an element rather than an element in its own right. The id is therefore derived from the
+ * target, deterministically, so re-highlighting the same element replaces its mark rather than
+ * accumulating one per call.
  */
-const LAYER_OF_ACTION: Readonly<Record<string, BoardLayer>> = {
-  'whiteboard.scribble': 'thinking',
+const MARK_ID_PREFIX: Readonly<Record<string, string>> = {
+  [HIGHLIGHT]: 'highlight',
+  [COUNT]: 'count',
 };
 
+/**
+ * Which layer an action commits to (FR-231).
+ *
+ * Derived from the recovered contract table rather than restated here. Three actions produce
+ * thinking-surface marks, not one: `scribble` ("thinking-surface marks never become truth-surface
+ * content"), `highlight` ("a thinking-surface mark over a truth-surface element"), and `count` (its
+ * numbering is an annotation over the counted element). An earlier version of this file treated
+ * scribble as the sole exception, which is the kind of quiet simplification the source review caught.
+ */
 function layerFor(action: string): BoardLayer {
-  return LAYER_OF_ACTION[action] ?? 'truth';
+  return THINKING_ACTIONS.includes(action) ? 'thinking' : 'truth';
 }
 
-/** The content a creating action stores, taken from the effect payload verbatim. */
-function contentOf(payload: Readonly<Record<string, unknown>>): string {
+/**
+ * The content a creating action stores.
+ *
+ * `content_ref` wins where the action declares it: the source says long prose and anything with
+ * braces belongs in the reference rather than inline, so the resolved reference *is* the content and
+ * is stored byte for byte. Only when there is no reference does the inline kwarg supply it.
+ */
+function contentOf(
+  action: string,
+  payload: Readonly<Record<string, unknown>>,
+  resolveRef: (reference: string) => string | undefined,
+): string {
   const kwargs = payload['kwargs'];
   if (kwargs === null || typeof kwargs !== 'object') return '';
   const record = kwargs as Record<string, unknown>;
-  // Preference order matches the recovered vocabulary: an equation stores its latex, text stores its
-  // text, and everything else stores whichever single descriptive kwarg it carries.
-  for (const key of ['latex', 'text', 'strokes', 'region', 'shape', 'from', 'of']) {
+
+  const reference = record['content_ref'];
+  if (typeof reference === 'string' && reference !== '') {
+    const resolved = resolveRef(reference);
+    if (resolved !== undefined) return resolved;
+  }
+
+  // Per-action preference, matching what each contract declares as its payload.
+  const preferred: Readonly<Record<string, readonly string[]>> = {
+    'whiteboard.text': ['text'],
+    'whiteboard.math': ['latex'],
+    'whiteboard.scribble': ['points'],
+    'whiteboard.shape': ['shape'],
+    'whiteboard.dots': ['count'],
+    'whiteboard.box': ['label'],
+    'whiteboard.arrow': ['label'],
+    'whiteboard.line': [],
+    'whiteboard.highlight': [],
+    'whiteboard.count': [],
+  };
+  for (const key of preferred[action] ?? []) {
     const value = record[key];
     if (typeof value === 'string' && value !== '') return value;
   }
@@ -227,6 +269,8 @@ export class WhiteboardPlugin implements EffectCommitter {
       }
       case ERASE: {
         const target = kwargs['target'];
+        // The reducer also removes marks linked to this element, so a count annotation does not
+        // outlive the thing it numbers.
         return typeof target === 'string' ? { kind: 'remove', id: target } : undefined;
       }
       case REVEAL: {
@@ -236,16 +280,33 @@ export class WhiteboardPlugin implements EffectCommitter {
       default: {
         const kind = KIND_OF_ACTION[effect.action];
         if (kind === undefined) return undefined;
-        const id = kwargs['id'];
-        if (typeof id !== 'string' || id === '') return undefined;
+
+        // A mark names itself from its target when the contract gives it no `id`: `highlight` and
+        // `count` both annotate an element rather than being one. `count` accepts an optional id for
+        // the annotation group, which wins when supplied.
+        const prefix = MARK_ID_PREFIX[effect.action];
+        const target = typeof kwargs['target'] === 'string' ? kwargs['target'] : '';
+        const declaredId = typeof kwargs['id'] === 'string' ? kwargs['id'] : '';
+
+        let id = declaredId;
+        if (id === '' && prefix !== undefined) {
+          if (target === '') return undefined;
+          id = `${prefix}:${target}`;
+        }
+        if (id === '') return undefined;
+
+        const attributes = attributesOf(payload);
+        // Marks are linked to what they annotate, which is how erasing the target cleans them up.
+        if (prefix !== undefined && target !== '') attributes['target'] = target;
+
         return {
           kind: 'commit',
           element: {
             id,
             kind,
             layer: layerFor(effect.action),
-            content: contentOf(payload),
-            attributes: attributesOf(payload),
+            content: contentOf(effect.action, payload, (reference) => this.contentFor(reference)),
+            attributes,
           },
         };
       }

@@ -12,22 +12,10 @@
  */
 
 import type { ValidationError, ValidationStage } from '@stagehand/registry';
+import { CREATING_ACTIONS, TARGET_ACTIONS } from './contracts.js';
 import { elementById, type BoardDocument } from './types.js';
 
-/** Actions whose `target` kwarg names an element that must exist. */
-export const TARGET_ACTIONS: readonly string[] = ['whiteboard.highlight', 'whiteboard.erase', 'whiteboard.reveal'];
-
-/** Actions that create an element and therefore require an id that is not already taken. */
-export const CREATING_ACTIONS: readonly string[] = [
-  'whiteboard.text',
-  'whiteboard.math',
-  'whiteboard.line',
-  'whiteboard.box',
-  'whiteboard.arrow',
-  'whiteboard.scribble',
-  'whiteboard.dots',
-  'whiteboard.shape',
-];
+export { CREATING_ACTIONS, TARGET_ACTIONS };
 
 export interface BoardResolution {
   readonly ok: boolean;
@@ -65,8 +53,8 @@ export function resolveContentRef(document: BoardDocument, reference: string): s
 /**
  * The entity-layer stage this plugin contributes.
  *
- * @param document A reader over the current board state. Called per command, so the stage always
- *   resolves against the board as it is *now* rather than against a snapshot taken at registration.
+ * @param read A reader over the current board state. Called per command, so the stage always resolves
+ *   against the board as it is *now* rather than against a snapshot taken at registration.
  */
 export function boardResolutionStage(read: () => BoardDocument): ValidationStage {
   return {
@@ -80,16 +68,14 @@ export function boardResolutionStage(read: () => BoardDocument): ValidationStage
 
       if (TARGET_ACTIONS.includes(command.action)) {
         const target = command.kwargs['target'];
-        if (target !== undefined) {
-          errors.push(...resolveTarget(document, target).errors);
-        }
+        if (target !== undefined && target !== '') errors.push(...resolveTarget(document, target).errors);
       }
 
       if (CREATING_ACTIONS.includes(command.action)) {
         const id = command.kwargs['id'];
         // A commit that reuses an id would produce two elements the board cannot tell apart, and
         // every later target reference would resolve to whichever sorting happens to favour.
-        if (id !== undefined && elementById(document, id) !== undefined) {
+        if (id !== undefined && id !== '' && elementById(document, id) !== undefined) {
           errors.push({
             code: 'E_STATE',
             layer: 'state',
@@ -99,8 +85,16 @@ export function boardResolutionStage(read: () => BoardDocument): ValidationStage
         }
       }
 
+      // `whiteboard.scribble` accepts an optional `target` linking a mark to an element, so it
+      // resolves even though it does not require one: the source declares the kwarg, so a non-empty
+      // value must name something.
+      if (command.action === 'whiteboard.scribble') {
+        const target = command.kwargs['target'];
+        if (target !== undefined && target !== '') errors.push(...resolveTarget(document, target).errors);
+      }
+
       const contentRef = command.kwargs['content_ref'];
-      if (contentRef !== undefined && resolveContentRef(document, contentRef) === undefined) {
+      if (contentRef !== undefined && contentRef !== '' && resolveContentRef(document, contentRef) === undefined) {
         errors.push({
           code: 'E_UNRESOLVED_REF',
           layer: 'entity',

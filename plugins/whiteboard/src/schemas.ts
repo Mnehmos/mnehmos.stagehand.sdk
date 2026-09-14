@@ -1,26 +1,19 @@
 /**
- * VC-superset capability schemas and the surface manifest (FR-229, FR-234).
+ * Surface manifest and the Clio compatibility record (FR-229, FR-234).
  *
- * The corpus records **21 surfaces** because two hosts each declared their own list, and six actions
- * appear in both:
+ * The **schemas** live in `contracts.ts`, derived from the pinned source. This module holds the two
+ * things that are not schema data:
  *
- * | Actions | Clio | VC |
- * |---|---|---|
- * | `show` `hide` `clear` `text` `line` `box` | SURF-034..039 | SURF-057..063 |
- * | `math` | — | SURF-061 |
- * | `arrow` `highlight` `scribble` `dots` `shape` `count` `erase` `reveal` | — | SURF-064..071 |
- *
- * Registering 21 schemas would put two contracts on one action name, which the registry rightly
- * refuses as a duplicate. So the **union** (15) is registered once, and the 21 surfaces are tracked
- * in a manifest. `TEST-203` walks the manifest, which is the check that would notice a surface being
- * dropped during consolidation — counting actions never would, because 15 is the correct number
- * either way.
- *
- * Where the two hosts describe the same action differently, VC's wording is adopted and the
- * difference is recorded in `CLIO_COMPATIBILITY`. That is `FR-234`'s point: the choice is explicit.
+ * - **The surface manifest.** The corpus records 21 surfaces because two hosts each declared their
+ *   own list, and six actions appear in both. The union is registered once; the surfaces are tracked
+ *   here so `TEST-203` can walk the *surface ids*, which is the check that notices a surface lost
+ *   during consolidation. Counting actions never would — 15 is correct either way.
+ * - **The Clio compatibility record.** The six actions Clio declares, and which of the two hosts'
+ *   contracts was adopted for each. Where they differ the Virtual Classroom superset wins, and that
+ *   choice is a registered divergence (`DIV-011`) rather than an accident.
  */
 
-import type { CommandSchema } from '@stagehand/registry';
+import { contractFor } from './contracts.js';
 
 /** One owned surface: a corpus identity plus the action that serves it. */
 export interface SurfaceBinding {
@@ -64,206 +57,129 @@ export const SURFACE_MANIFEST: readonly SurfaceBinding[] = [
   surface('SURF-071', 'CTR-071', 'whiteboard.reveal', 'Virtual Classroom'),
 ];
 
-/** The layer selector a clear applies to. Absent means the whole board. */
-const LAYER_KWARG = {
-  layer: { type: { kind: 'enum', values: ['truth', 'thinking', 'all'] }, default: 'all' },
-} as const;
+/** A recorded difference between the two hosts' contracts for one action. */
+export interface CompatibilityDifference {
+  readonly field: string;
+  readonly clio: string;
+  readonly adopted: string;
+}
 
-/** Every schema shares a `target` kwarg where it addresses an existing element. */
-const TARGET = { type: { kind: 'string', minLength: 1 } } as const;
-
-export const WHITEBOARD_SCHEMAS: readonly CommandSchema[] = [
-  {
-    action: 'whiteboard.show',
-    description: 'Activate the board. A hidden board returns with its content intact.',
-    minArgs: 0,
-    maxArgs: 0,
-    optionalKwargs: { ...LAYER_KWARG },
-    entityResolution: 'none',
-    authoring: { summary: 'Present the board', examples: ['[whiteboard.show]'] },
-  },
-  {
-    action: 'whiteboard.hide',
-    description: 'Occlude the board without destroying content. Not the same as clear.',
-    minArgs: 0,
-    maxArgs: 0,
-    optionalKwargs: {},
-    entityResolution: 'none',
-    authoring: { summary: 'Cover the board, keeping it', examples: ['[whiteboard.hide]'] },
-  },
-  {
-    action: 'whiteboard.clear',
-    description: 'Clear board content, on one layer or all.',
-    minArgs: 0,
-    maxArgs: 0,
-    optionalKwargs: { ...LAYER_KWARG },
-    entityResolution: 'none',
-    authoring: { summary: 'Remove content', examples: ['[whiteboard.clear]', '[whiteboard.clear layer=thinking]'] },
-  },
-  {
-    action: 'whiteboard.text',
-    description: 'Commit exact text as an element.',
-    minArgs: 0,
-    maxArgs: 0,
-    requiredKwargs: { id: TARGET, text: { type: { kind: 'string' } } },
-    optionalKwargs: { size: { type: { kind: 'enum', values: ['sm', 'md', 'lg'] }, default: 'md' } },
-    entityResolution: 'none',
-  },
-  {
-    action: 'whiteboard.math',
-    description: 'Commit a typeset equation.',
-    minArgs: 0,
-    maxArgs: 0,
-    requiredKwargs: { id: TARGET, latex: { type: { kind: 'string', minLength: 1 } } },
-    entityResolution: 'none',
-  },
-  {
-    action: 'whiteboard.line',
-    description: 'Draw a line. Ends are element references or freeform coordinates the host supplies.',
-    minArgs: 0,
-    maxArgs: 0,
-    requiredKwargs: { id: TARGET },
-    optionalKwargs: {
-      from: { type: { kind: 'string' } },
-      to: { type: { kind: 'string' } },
-      color: { type: { kind: 'color' } },
-    },
-    entityResolution: 'none',
-  },
-  {
-    action: 'whiteboard.box',
-    description: 'Draw a box or panel.',
-    minArgs: 0,
-    maxArgs: 0,
-    requiredKwargs: { id: TARGET },
-    optionalKwargs: { region: { type: { kind: 'string' } }, color: { type: { kind: 'color' } } },
-    entityResolution: 'none',
-  },
-  {
-    action: 'whiteboard.arrow',
-    description: 'Draw an arrow.',
-    minArgs: 0,
-    maxArgs: 0,
-    requiredKwargs: { id: TARGET },
-    optionalKwargs: { from: { type: { kind: 'string' } }, to: { type: { kind: 'string' } } },
-    entityResolution: 'none',
-  },
-  {
-    action: 'whiteboard.highlight',
-    description: 'Highlight an existing board element.',
-    minArgs: 0,
-    maxArgs: 0,
-    requiredKwargs: { target: TARGET },
-    optionalKwargs: { color: { type: { kind: 'color' } } },
-    entityResolution: 'none',
-  },
-  {
-    action: 'whiteboard.scribble',
-    description: "Commit rough working to the thinking layer, where a learner-facing view cannot see it.",
-    minArgs: 0,
-    maxArgs: 0,
-    requiredKwargs: { id: TARGET },
-    optionalKwargs: { strokes: { type: { kind: 'string' } } },
-    entityResolution: 'none',
-  },
-  {
-    action: 'whiteboard.dots',
-    description: 'Draw countable dots or tokens.',
-    minArgs: 0,
-    maxArgs: 0,
-    requiredKwargs: { id: TARGET, count: { type: { kind: 'number', integer: true, min: 1, max: 500 } } },
-    optionalKwargs: { color: { type: { kind: 'color' } } },
-    entityResolution: 'none',
-  },
-  {
-    action: 'whiteboard.shape',
-    description: 'Draw a named geometric figure.',
-    minArgs: 0,
-    maxArgs: 0,
-    requiredKwargs: {
-      id: TARGET,
-      shape: { type: { kind: 'enum', values: ['triangle', 'square', 'rectangle', 'circle', 'pentagon', 'hexagon'] } },
-    },
-    optionalKwargs: { sides: { type: { kind: 'number', integer: true, min: 3, max: 12 } } },
-    entityResolution: 'none',
-  },
-  {
-    action: 'whiteboard.count',
-    description: 'Count items or properties.',
-    minArgs: 0,
-    maxArgs: 0,
-    requiredKwargs: { of: { type: { kind: 'string', minLength: 1 } }, value: { type: { kind: 'number', integer: true, min: 0 } } },
-    entityResolution: 'none',
-  },
-  {
-    action: 'whiteboard.erase',
-    description: 'Erase an existing board element.',
-    minArgs: 0,
-    maxArgs: 0,
-    requiredKwargs: { target: TARGET },
-    entityResolution: 'none',
-  },
-  {
-    action: 'whiteboard.reveal',
-    description: 'Reveal a concealed element.',
-    minArgs: 0,
-    maxArgs: 0,
-    requiredKwargs: { target: TARGET },
-    entityResolution: 'none',
-  },
-];
-
-/** Action names, exported so callers never retype a string that must match a schema. */
-export const WHITEBOARD_ACTIONS: readonly string[] = WHITEBOARD_SCHEMAS.map((schema) => schema.action);
-
-/** The six actions that carry two surface identities, and the host whose semantics were adopted. */
-export const CLIO_COMPATIBILITY: readonly {
+/** One entry of the Clio compatibility record. */
+export interface CompatibilityEntry {
   readonly action: string;
   readonly clioSurface: string;
   readonly clioBehavior: string;
   readonly adoptedBehavior: string;
+  readonly differences: readonly CompatibilityDifference[];
   readonly note: string;
-}[] = [
+}
+
+/**
+ * The six actions both hosts declare, with the differences recorded.
+ *
+ * `differences` is compared against the evidence file by `TEST-203`, so a contract change that is
+ * not reflected here fails rather than passing quietly.
+ */
+export const CLIO_COMPATIBILITY: readonly CompatibilityEntry[] = [
   {
     action: 'whiteboard.show',
     clioSurface: 'SURF-034',
-    clioBehavior: 'Show screen-space whiteboard.',
-    adoptedBehavior: 'Activate board/new page.',
-    note: 'VC wording adopted. Both mean "make it visible"; VC additionally names the page.',
+    clioBehavior: 'Show the full-screen whiteboard surface over the globe',
+    adoptedBehavior: 'Make the board active and start a new page',
+    differences: [
+      { field: 'optionalKwargs', clio: 'title, subtitle, style, background, opacity', adopted: 'title, page' },
+      { field: 'settleMs', clio: 'absent', adopted: '600' },
+    ],
+    note:
+      'Both make the board visible, but they take different kwargs: Clio styles a full-screen overlay while ' +
+      'VC names a page. VC adopted. A Clio producer sending subtitle/style/background/opacity must be ' +
+      'corrected rather than silently ignored, which is why they are not carried forward as accepted extras.',
   },
   {
     action: 'whiteboard.hide',
     clioSurface: 'SURF-035',
-    clioBehavior: 'Hide whiteboard.',
-    adoptedBehavior: 'Occlude/deactivate presentation without destroying content.',
-    note: 'VC semantics adopted, and this is the load-bearing one: Clio\'s wording leaves "hide" open to meaning "clear", and collapsing them destroys a lesson\'s work. TEST-204 protects the distinction.',
+    clioBehavior: 'Hide the full-screen whiteboard surface',
+    adoptedBehavior: 'Stop presenting the board without destroying its content',
+    differences: [
+      { field: 'content', clio: 'ends the beat, wiping marks', adopted: 'preserves every element' },
+      { field: 'settleMs', clio: 'absent', adopted: '400' },
+    ],
+    note:
+      'The load-bearing one, and the reason DIV-011 exists. The VC source itself calls this a deliberate ' +
+      'divergence from Clio. Collapsing hide into clear destroys a lesson the moment a teacher covers the ' +
+      'board to talk over it, and does so silently. TEST-204 protects the distinction.',
   },
   {
     action: 'whiteboard.clear',
     clioSurface: 'SURF-036',
-    clioBehavior: 'Clear whiteboard.',
-    adoptedBehavior: 'Clear board layer/page content.',
-    note: 'VC wording adopted. VC scopes the clear to a layer, which Clio\'s does not express.',
+    clioBehavior: 'Clear all whiteboard marks',
+    adoptedBehavior: 'Erase the current board page, committing a new revision',
+    differences: [
+      { field: 'optionalKwargs', clio: 'none', adopted: 'layer (all|truth|thinking)' },
+      { field: 'settleMs', clio: 'absent', adopted: '800' },
+    ],
+    note: 'VC adopts a layer-scoped clear, which Clio cannot express. Prefer layer=thinking to wipe scribbles only.',
   },
   {
     action: 'whiteboard.text',
     clioSurface: 'SURF-037',
-    clioBehavior: 'Place freeform text.',
-    adoptedBehavior: 'Commit exact text element.',
-    note: 'VC wording adopted: "commit exact" is the stronger contract, and byte-fidelity is testable.',
+    clioBehavior: 'Place freeform text on the whiteboard using screen-space coordinates',
+    adoptedBehavior: 'Place exact text on the board truth surface',
+    differences: [
+      { field: 'maxArgs', clio: '1', adopted: '0' },
+      { field: 'requiredKwargs', clio: 'none (id optional)', adopted: 'id' },
+      { field: 'optionalKwargs', clio: 'id, x, y, text, size, color', adopted: '+ content_ref, region, conceal' },
+      { field: 'colorDefault', clio: '#f8fafc', adopted: "'' (unset)" },
+      { field: 'enums', clio: 'none', adopted: 'conceal, size' },
+      { field: 'numeric', clio: 'none', adopted: 'x, y' },
+      { field: 'settleMs', clio: 'absent', adopted: '1000' },
+    ],
+    note:
+      'VC makes `id` required — the id is how the avatar points at the element later, so an unnamed ' +
+      'element is one nothing can refer to. content_ref is how long prose travels without being re-typed.',
   },
   {
     action: 'whiteboard.line',
     clioSurface: 'SURF-038',
-    clioBehavior: 'Draw freeform line.',
-    adoptedBehavior: 'Draw line.',
-    note: 'Equivalent; VC wording adopted for consistency.',
+    clioBehavior: 'Draw a freeform line on the whiteboard using screen-space coordinates',
+    adoptedBehavior: 'Draw a line on the board',
+    differences: [
+      { field: 'requiredKwargs', clio: 'none (id optional)', adopted: 'id' },
+      { field: 'colorDefault', clio: '#38bdf8', adopted: "'' (unset)" },
+      { field: 'numeric', clio: 'none', adopted: 'x1, y1, x2, y2, stroke' },
+      { field: 'enums', clio: 'none', adopted: 'style' },
+      { field: 'settleMs', clio: 'absent', adopted: '1000' },
+    ],
+    note: 'Same geometry kwargs; VC requires the id and constrains the values.',
   },
   {
     action: 'whiteboard.box',
     clioSurface: 'SURF-039',
-    clioBehavior: 'Draw box/panel.',
-    adoptedBehavior: 'Draw box.',
-    note: 'Equivalent; VC wording adopted for consistency.',
+    clioBehavior: 'Draw a freeform box or panel on the whiteboard',
+    adoptedBehavior: 'Draw a labelled box or panel on the board',
+    differences: [
+      { field: 'requiredKwargs', clio: 'none (id optional)', adopted: 'id' },
+      { field: 'optionalKwargs', clio: 'id, x, y, width, height, color, opacity, label', adopted: 'drops opacity' },
+      { field: 'colorDefault', clio: '#fbbf24', adopted: "'' (unset)" },
+      { field: 'enums', clio: 'none', adopted: 'conceal' },
+      { field: 'numeric', clio: 'none', adopted: 'x, y, width, height' },
+      { field: 'settleMs', clio: 'absent', adopted: '1000' },
+    ],
+    note:
+      'Same geometry kwargs; VC requires the id, adds conceal, constrains the numerics, and drops ' +
+      "Clio's opacity. Dropping a kwarg is a real difference, not a simplification: a Clio producer " +
+      'relying on opacity must be corrected instead of having it silently ignored.',
   },
 ];
+
+/** Cross-cutting differences true of every shared action. */
+export const CLIO_CROSS_CUTTING: readonly CompatibilityDifference[] = [
+  { field: 'settleMs', clio: 'field absent on every Clio schema', adopted: 'declared per action' },
+  { field: 'resolvesEntity', clio: 'boolean', adopted: "null | 'anchor' | 'board'" },
+  { field: 'vocabulary', clio: '6 actions', adopted: '15 actions (VC superset)' },
+];
+
+/** The contract for a shared action, for callers that need the adopted values. */
+export function adoptedContract(action: string): ReturnType<typeof contractFor> {
+  return contractFor(action);
+}

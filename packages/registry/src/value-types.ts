@@ -134,8 +134,16 @@ export function checkValue(value: string, type: ValueType): ValueCheck {
     case 'duration':
       return checkDuration(value, type);
     case 'color': {
-      if (HEX_COLOR.test(value.trim()) || FN_COLOR.test(value.trim())) return OK;
-      return fail(`expected a hex or rgb() color, got "${value}"`);
+      const trimmed = value.trim();
+      if (HEX_COLOR.test(trimmed) || FN_COLOR.test(trimmed)) return OK;
+      // A schema may declare named colours; the host palette is not core's vocabulary, so an
+      // undeclared name is rejected rather than accepted as a CSS name this package does not know.
+      if (type.named !== undefined && type.named.includes(trimmed)) return OK;
+      const expected =
+        type.named === undefined || type.named.length === 0
+          ? 'a hex or rgb() color'
+          : `a hex color or one of [${type.named.join(', ')}]`;
+      return fail(`expected ${expected}, got "${value}"`);
     }
     case 'entityRef': {
       if (ENTITY_REF.test(value.trim())) return OK;
@@ -174,7 +182,9 @@ export function describeValueType(type: ValueType): string {
     case 'duration':
       return 'duration';
     case 'color':
-      return 'color';
+      return type.named === undefined || type.named.length === 0
+        ? 'color'
+        : `color(${type.named.join('|')}|#hex)`;
     case 'entityRef':
       return 'entityRef';
     case 'entityRefList':

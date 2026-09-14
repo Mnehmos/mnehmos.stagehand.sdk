@@ -41,17 +41,29 @@ from the other side. Two things follow from that and shape the whole feature:
 
 - **FR-228 · Board document and revision model.** The plugin MUST maintain a board document holding
   committed elements with stable ids, and MUST expose a monotonically increasing **revision** that
-  advances on every committed change and not on a rejected one. The document MUST be
-  plugin-owned: no core package holds or imports board state (`ENT-010`).
+  advances on every committed change and not on a rejected one. Committing an element whose id is
+  already present MUST replace it rather than append a second element with the same id, because two
+  elements sharing an id are indistinguishable to every later target reference. Removing an element
+  MUST also remove marks **linked to it**, so a `count` annotation cannot outlive the element it
+  numbers. The document MUST be plugin-owned: no core package holds or imports board state
+  (`ENT-010`).
   → ENT-010 · T-074
 
-- **FR-229 · VC-superset capability schemas.** The plugin MUST register all **15 distinct** actions
-  across the 21 owned surfaces — `whiteboard.show`, `.hide`, `.clear`, `.text`, `.math`, `.line`,
-  `.box`, `.arrow`, `.highlight`, `.scribble`, `.dots`, `.shape`, `.count`, `.erase`, `.reveal` —
-  each with a typed schema, so that every owned surface is reachable through the registry and none
-  is advertised without a contract. Six actions appear in both hosts' surface lists and MUST be
-  registered **once**, not twice.
-  → SURF-034..039, SURF-057..071 → CTR-034..039, CTR-057..071
+- **FR-229 · VC-superset capability schemas, recovered from the pinned source.** The plugin MUST
+  register all **15 distinct** actions across the 21 owned surfaces — `whiteboard.show`, `.hide`,
+  `.clear`, `.text`, `.math`, `.line`, `.box`, `.arrow`, `.highlight`, `.scribble`, `.dots`,
+  `.shape`, `.count`, `.erase`, `.reveal` — each with the contract the **pinned source** declares:
+  required kwargs, optional kwargs and their defaults, enum members, numeric/duration/colour fields,
+  the entity kind a target resolves against, and the settle budget. Six actions appear in both
+  hosts' surface lists and MUST be registered **once**, not twice. The schemas MUST be derived from a
+  single recovered contract table rather than authored alongside it, so one statement cannot disagree
+  with the other.
+  → SURF-034..039, SURF-057..071 → CTR-034..039, CTR-057..071 · `docs/evidence/virtual-classroom-whiteboard.json`
+
+  The corpus is an index, not a specification. An earlier version of this feature transcribed
+  `whiteboard.count` as `{of, value}` from the corpus's one-line behaviour string and omitted
+  `content_ref` from `whiteboard.text`/`whiteboard.math` entirely, while still registering 15
+  actions — so a test that counted actions stayed green through both errors. See `DIV-011`.
 
 - **FR-230 · Hide and clear are different operations.** `hide` MUST occlude the board while
   preserving every committed element, and a subsequent `show` MUST restore exactly that content.
@@ -62,22 +74,28 @@ from the other side. Two things follow from that and shape the whole feature:
   → SURF-035, SURF-058 → CTR-035, CTR-058
 
 - **FR-231 · Truth and thinking layers are isolated.** Elements MUST carry a layer of `truth` or
-  `thinking`. `scribble` MUST commit to `thinking`; every other content action MUST commit to
-  `truth`. Reading either layer MUST NOT include the other's elements, and clearing one MUST NOT
-  clear the other. A learner-facing view built from the truth layer must therefore be unable to
-  contain a teacher's rough working.
-  → SURF-066 → CTR-066 · T-077
+  `thinking`. **Three** actions produce thinking-surface marks, as the pinned source states of each:
+  `scribble` ("thinking-surface marks never become truth-surface content"), `highlight` ("a
+  thinking-surface mark over a truth-surface element — it never alters the element"), and `count`
+  (numbering drawn over the element it counts). Every other action that creates an element commits to
+  `truth`; `reveal` and `erase` alter or remove an element rather than creating one. Reading either
+  layer MUST NOT include the other's elements, and clearing one MUST NOT clear the other. A
+  learner-facing view built from the truth layer must therefore be unable to contain a teacher's
+  rough working.
+  → SURF-065, SURF-066, SURF-069 → CTR-065, CTR-066, CTR-069 · T-077
 
 - **FR-232 · `content_ref` resolves to canonical content.** A command carrying `content_ref` MUST
   resolve to the board's stored content for that reference, returned **byte for byte** as committed.
   An unresolvable reference MUST be rejected rather than substituted or re-parsed.
   → T-076
 
-- **FR-233 · Board target resolution.** `highlight`, `erase`, and `reveal` MUST resolve their target
-  against the board's committed elements, and `point`-style resolution MUST NOT invent a position for
-  an id it does not hold. An unknown target MUST be reported as unresolved (`E_UNRESOLVED_REF`) so
-  the command is rejected, never applied to a guessed element.
-  → SURF-065, SURF-070, SURF-071 → CTR-065, CTR-070, CTR-071 · T-079
+- **FR-233 · Board target resolution.** Every action the pinned source declares as resolving a
+  `board` entity — `highlight`, `count`, `erase`, and `reveal` — MUST resolve its target against the
+  board's committed elements, and resolution MUST NOT invent a position or an element for an id the
+  board does not hold. An unknown target MUST be reported as unresolved (`E_UNRESOLVED_REF`) so the
+  command is rejected, never applied to a guessed element. `scribble` accepts an optional `target` and
+  MUST resolve it when one is supplied.
+  → SURF-065, SURF-069, SURF-070, SURF-071 → CTR-065, CTR-069, CTR-070, CTR-071 · T-079
 
 - **FR-234 · Clio compatibility mapping.** The six Clio surfaces MUST be served by the same 15
   actions, with each of the six mapped to its VC-superset counterpart and the mapping declared as
@@ -120,6 +138,12 @@ overlap: six actions carry two surface identities.
 | `clear` | Elements removed; revision advances. |
 | `hide` then `clear` then `show` | Board empty: `clear` removed content that `hide` had preserved. |
 | `scribble` | Element committed to `thinking`; truth layer unchanged. |
+| `highlight` on a committed element | Thinking-layer mark linked to the target; the element itself byte-identical. |
+| `count` on a committed element | Thinking-layer annotation carrying `what`/`from`/`pace`, linked to the target. |
+| `erase` of a counted element | Both the element and its count annotation are removed. |
+| Commit reusing an existing id | Replaces that element; no duplicate id exists in the document. |
+| A text/math command carrying `content_ref` | Accepted by the registry, resolved by the entity stage, content stored byte for byte. |
+| A text/math command carrying an unknown `content_ref` | `E_UNRESOLVED_REF` at the entity layer; nothing committed. |
 | Read of the truth layer after a `scribble` | Does not contain the scribble. |
 | `clear` on one layer | The other layer's elements are untouched. |
 | `highlight`/`erase`/`reveal` with a known target | Applied to that element. |
@@ -152,10 +176,17 @@ core's ordering.
 
 ## 10. Divergence Register
 
-No feature-level divergence is introduced, and one is deliberately avoided: where Clio's and VC's
-recorded behavior for the same action differ, the VC superset is adopted and the choice is recorded
-in the mapping (FR-234) rather than being one host's behavior winning by accident. `TEST-204` exists
-so a later change cannot quietly undo it.
+- **DIV-011** — Adopt the Virtual Classroom whiteboard superset for the six actions both hosts
+  declare. `hide` occludes and preserves content where Clio's ends the beat and wipes marks; `id`
+  becomes required on the creating actions; `content_ref`/`region`/`conceal` are accepted; enum,
+  numeric, and colour constraints are enforced; `settleMs` is declared per action. The pinned VC
+  source calls the `hide` difference deliberate, and the choice is recorded rather than left implicit.
+  `TEST-204` asserts the distinction and would fail if `hide` were re-implemented as `clear`.
+
+  One consequence worth naming: Clio's `whiteboard.show` and `whiteboard.box` carry kwargs VC does not
+  (`subtitle`/`style`/`background`/`opacity`, and `opacity` respectively). They are **not** carried
+  forward as accepted extras — a Clio producer that sends them is corrected rather than silently
+  ignored, because silently ignoring a kwarg is how a producer learns the wrong vocabulary.
 
 ## 11. Parity Exits
 
@@ -176,14 +207,18 @@ so a later change cannot quietly undo it.
 1. Every one of the 21 owned surfaces is reachable through the registry — asserted by walking the
    surface list, not by counting actions — while the registry holds 15 actions, so no action is
    registered twice under two host identities.
-2. A board that is hidden still holds every element, and one that is cleared holds none — asserted
+2. **Every recovered contract matches the pinned source field by field**: required kwargs, optional
+   kwargs and defaults, enum members, numeric/duration/colour fields, the entity kind a target
+   resolves against, and the settle budget. A mutation of any one of them fails `TEST-203`.
+3. A board that is hidden still holds every element, and one that is cleared holds none — asserted
    after the same intervening command sequence.
-3. A scribble is absent from the truth layer and present in the thinking layer; clearing truth leaves
-   the scribble.
-4. `content_ref` returns the stored bytes, verified by comparison against what was committed rather
-   than against a constant.
-5. An unknown target or `content_ref` produces `E_UNRESOLVED_REF` and leaves the revision unchanged.
-6. `pnpm check` is green.
+4. A scribble, a highlight, and a count annotation are each absent from the truth layer and present
+   in the thinking layer; clearing truth leaves all three.
+5. `content_ref` returns the stored bytes, verified by comparison against what was committed rather
+   than against a constant, and reaching the resolver **through registry validation** rather than
+   only at the helper.
+6. An unknown target or `content_ref` produces `E_UNRESOLVED_REF` and leaves the revision unchanged.
+7. `pnpm check` is green.
 
 ## 14. Open Questions
 

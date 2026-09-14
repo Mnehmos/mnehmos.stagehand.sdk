@@ -53,9 +53,14 @@ describe('TEST-207 / a known target resolves', () => {
     expect(stage.validate(targetCommand('whiteboard.highlight', 'e3'), {}) ?? []).toEqual([]);
   });
 
-  it('names the board actions that take a target', () => {
-    expect([...TARGET_ACTIONS].sort()).toEqual(['whiteboard.erase', 'whiteboard.highlight', 'whiteboard.reveal']);
+  it('names the board actions that take a target, as the pinned source declares them', () => {
+    // Four, not three: `whiteboard.count` is target-based too, which the first implementation missed
+    // by transcribing the corpus's one-line behaviour string instead of the source contract.
+    expect([...TARGET_ACTIONS].sort()).toEqual([
+      'whiteboard.count', 'whiteboard.erase', 'whiteboard.highlight', 'whiteboard.reveal',
+    ]);
     expect(isTargetAction('whiteboard.highlight')).toBe(true);
+    expect(isTargetAction('whiteboard.count')).toBe(true);
     expect(isTargetAction('whiteboard.text')).toBe(false);
   });
 });
@@ -104,12 +109,38 @@ describe('TEST-207 / a rejected command leaves the revision alone', () => {
 });
 
 describe('TEST-207 / the three target actions do different things to the same element', () => {
-  it('highlight resolves without removing', () => {
+  it('highlight adds a thinking-surface mark and never alters the element', () => {
+    // "Highlight is a thinking-surface mark over a truth-surface element. It never alters the
+    // element." So the element's own entry must be byte-identical afterwards, and the mark must sit
+    // on the thinking layer linked to its target.
     const plugin = seeded();
+    const before = plugin.document.elements.find((element) => element.id === 'e1');
+
     plugin.commit([
       { plugin: 'whiteboard', action: 'whiteboard.highlight', payload: { args: [], kwargs: { target: 'e1' }, refs: [] } },
     ]);
-    expect(plugin.document.elements.map((e) => e.id)).toEqual(['e1', 'e2']);
+
+    const after = plugin.document.elements.find((element) => element.id === 'e1');
+    expect(after).toEqual(before);
+
+    const mark = plugin.document.elements.find((element) => element.kind === 'highlight');
+    expect(mark?.layer).toBe('thinking');
+    expect(mark?.attributes['target']).toBe('e1');
+  });
+
+  it('re-highlighting the same element replaces its mark rather than accumulating one', () => {
+    const plugin = seeded();
+    const highlight = (color: string): void => {
+      plugin.commit([
+        { plugin: 'whiteboard', action: 'whiteboard.highlight', payload: { args: [], kwargs: { target: 'e1', color }, refs: [] } },
+      ]);
+    };
+    highlight('yellow');
+    highlight('cyan');
+    const marks = plugin.document.elements.filter((element) => element.kind === 'highlight');
+    // The mark id is derived from the target, so a second highlight is the same mark re-written.
+    expect(marks).toHaveLength(1);
+    expect(marks[0]?.attributes['color']).toBe('cyan');
   });
 
   it('erase removes exactly the named element', () => {
@@ -131,6 +162,22 @@ describe('TEST-207 / the three target actions do different things to the same el
     const revealed = plugin.document.elements.find((element) => element.id === 'hidden');
     expect(revealed?.attributes['concealed']).toBe('false');
     expect(revealed?.content).toBe('answer');
+  });
+
+  it('erasing a target removes marks linked to it', () => {
+    // The recovered count annotation is tied to the element it numbers, so the numbering must not
+    // outlive the counted element.
+    const plugin = seeded();
+    plugin.commit([
+      { plugin: 'whiteboard', action: 'whiteboard.highlight', payload: { args: [], kwargs: { target: 'e1' }, refs: [] } },
+    ]);
+    expect(plugin.document.elements.some((element) => element.kind === 'highlight')).toBe(true);
+
+    plugin.commit([
+      { plugin: 'whiteboard', action: 'whiteboard.erase', payload: { args: [], kwargs: { target: 'e1' }, refs: [] } },
+    ]);
+    expect(plugin.document.elements.map((element) => element.id)).toEqual(['e2']);
+    expect(plugin.document.elements.some((element) => element.attributes['target'] === 'e1')).toBe(false);
   });
 
   it('a second erase of the same element no longer resolves', () => {

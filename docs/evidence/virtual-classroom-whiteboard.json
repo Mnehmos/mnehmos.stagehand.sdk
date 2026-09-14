@@ -1,0 +1,228 @@
+{
+  "$comment": "Pinned-source evidence for FEAT-012. The reconstruction corpus owns identities and traceability but compresses exact wire contracts; this file records what the pinned source actually declares, so a 'schema conformance' test can compare real contract details rather than action presence. Interface facts only — required/optional kwargs, defaults, enums, numeric/duration/colour fields, entity-resolution kind, and settle budget. No source code is vendored: U-003 records that the Virtual Classroom project has no LICENSE, and Constitution XI gates distribution of source-derived *code* on its resolution. Interface facts of the kind docs/corpus/ already publishes are recorded here with provenance so they are auditable.",
+  "provenance": [
+    {
+      "host": "Virtual Classroom",
+      "repo": "Mnehmos/virtual-classroom",
+      "commit": "cd7253608297efd57921c965b7440f4d4081842f",
+      "path": "src/stagehand/types.ts",
+      "sha256": "cf06c245a6966ea134afbeaba489b3aeeb96b952a424c64dd2c2473e7a89f626",
+      "lines": "313-550 (whiteboard block)",
+      "retrieved": "2026-09-13",
+      "visibility": "public"
+    },
+    {
+      "host": "Clio",
+      "repo": "Mnehmos/clio",
+      "commit": "03b1e1fff2254f5f97947ea249ad84827118136e",
+      "path": "src/stagehand/types.ts",
+      "sha256": "210870690a1c3dd83559285ffc69467028d344bbca193f49b22f4f9d6a94830d",
+      "lines": "730-810 (whiteboard block)",
+      "retrieved": "2026-09-13",
+      "visibility": "private (accessible to the maintainer and to this agent via gh)"
+    }
+  ],
+  "sharedVocabulary": {
+    "textSizes": ["sm", "md", "lg", "xl"],
+    "inkColors": ["ink", "dim", "accent", "warm", "rose", "green"],
+    "inkColorNote": "The pinned source defines a colour kwarg as accepting a named ink colour or an explicit #rrggbb. The names are a classroom-wide palette, not a whiteboard-local one.",
+    "dotArrangements": ["line", "array", "five_frame", "ten_frame", "scatter", "number_cube"],
+    "dotTokens": ["dot", "cube", "square", "triangle", "star", "counter"],
+    "shapes": ["circle", "oval", "square", "rectangle", "triangle", "hexagon", "trapezoid", "rhombus", "pentagon", "cube", "sphere", "cone", "cylinder", "pyramid"],
+    "countables": ["items", "corners", "sides"],
+    "entityKinds": ["anchor", "board"],
+    "entityKindNote": "Two entity kinds, not one: Clio resolves only GeoEntity, the classroom additionally needs board elements. Keeping them distinct is what lets the validator reject a target that was never committed."
+  },
+  "virtualClassroom": {
+    "whiteboard.show": {
+      "description": "Make the board active and start a new page",
+      "minArgs": 0, "maxArgs": 0,
+      "requiredKwargs": [],
+      "optionalKwargs": { "title": "", "page": "" },
+      "resolvesEntity": null,
+      "settleMs": 600,
+      "authoringRole": "setup"
+    },
+    "whiteboard.hide": {
+      "description": "Stop presenting the board without destroying its content",
+      "minArgs": 0, "maxArgs": 0,
+      "requiredKwargs": [],
+      "optionalKwargs": {},
+      "resolvesEntity": null,
+      "settleMs": 400,
+      "authoringRole": "clear",
+      "sourceNote": "The pinned source records this as a deliberate divergence from Clio, where whiteboard.hide wipes marks. In a classroom the projector occludes the board; it does not end its presentation."
+    },
+    "whiteboard.clear": {
+      "description": "Erase the current board page, committing a new revision",
+      "minArgs": 0, "maxArgs": 0,
+      "requiredKwargs": [],
+      "optionalKwargs": { "layer": "all" },
+      "resolvesEntity": null,
+      "settleMs": 800,
+      "enums": { "layer": ["all", "truth", "thinking"] },
+      "authoringRole": "clear",
+      "sourceNote": "Prefer layer=thinking to wipe scribbles while leaving verified content standing."
+    },
+    "whiteboard.text": {
+      "description": "Place exact text on the board truth surface",
+      "minArgs": 0, "maxArgs": 0,
+      "requiredKwargs": ["id"],
+      "optionalKwargs": { "x": "50", "y": "50", "text": "", "content_ref": "", "size": "md", "color": "", "region": "", "conceal": "false" },
+      "resolvesEntity": null,
+      "settleMs": 1000,
+      "enums": { "conceal": ["true", "false"], "size": ["sm", "md", "lg", "xl"] },
+      "numeric": ["x", "y"],
+      "colors": ["color"],
+      "authoringRole": "inline_cue",
+      "sourceNote": "Long prose belongs in content_ref, not inline."
+    },
+    "whiteboard.math": {
+      "description": "Typeset an equation on the board truth surface",
+      "minArgs": 0, "maxArgs": 0,
+      "requiredKwargs": ["id"],
+      "optionalKwargs": { "x": "50", "y": "50", "latex": "", "content_ref": "", "size": "lg", "color": "", "region": "", "conceal": "false" },
+      "resolvesEntity": null,
+      "settleMs": 1100,
+      "enums": { "conceal": ["true", "false"], "size": ["sm", "md", "lg", "xl"] },
+      "numeric": ["x", "y"],
+      "colors": ["color"],
+      "authoringRole": "inline_cue",
+      "sourceNote": "Use content_ref for anything with braces or spaces."
+    },
+    "whiteboard.line": {
+      "description": "Draw a line on the board",
+      "minArgs": 0, "maxArgs": 0,
+      "requiredKwargs": ["id"],
+      "optionalKwargs": { "x1": "20", "y1": "50", "x2": "80", "y2": "50", "color": "", "stroke": "3", "style": "solid" },
+      "resolvesEntity": null,
+      "settleMs": 1000,
+      "enums": { "style": ["solid", "dashed"] },
+      "numeric": ["x1", "y1", "x2", "y2", "stroke"],
+      "colors": ["color"],
+      "authoringRole": "inline_cue"
+    },
+    "whiteboard.box": {
+      "description": "Draw a labelled box or panel on the board",
+      "minArgs": 0, "maxArgs": 0,
+      "requiredKwargs": ["id"],
+      "optionalKwargs": { "x": "50", "y": "50", "width": "28", "height": "18", "color": "", "label": "", "conceal": "false" },
+      "resolvesEntity": null,
+      "settleMs": 1000,
+      "enums": { "conceal": ["true", "false"] },
+      "numeric": ["x", "y", "width", "height"],
+      "colors": ["color"],
+      "authoringRole": "inline_cue"
+    },
+    "whiteboard.arrow": {
+      "description": "Draw an arrow between two board points",
+      "minArgs": 0, "maxArgs": 0,
+      "requiredKwargs": ["id"],
+      "optionalKwargs": { "x1": "30", "y1": "50", "x2": "70", "y2": "50", "color": "", "label": "" },
+      "resolvesEntity": null,
+      "settleMs": 1000,
+      "numeric": ["x1", "y1", "x2", "y2"],
+      "colors": ["color"],
+      "authoringRole": "inline_cue"
+    },
+    "whiteboard.highlight": {
+      "description": "Emphasise a committed board element",
+      "minArgs": 0, "maxArgs": 0,
+      "requiredKwargs": ["target"],
+      "optionalKwargs": { "color": "yellow", "duration": "3000" },
+      "resolvesEntity": "board",
+      "settleMs": 500,
+      "enums": { "color": ["yellow", "cyan", "rose", "green"] },
+      "durations": ["duration"],
+      "authoringRole": "inline_cue",
+      "sourceNote": "Highlight is a thinking-surface mark over a truth-surface element. It never alters the element."
+    },
+    "whiteboard.scribble": {
+      "description": "Add a temporary hand-drawn mark to the thinking surface",
+      "minArgs": 0, "maxArgs": 0,
+      "requiredKwargs": ["id"],
+      "optionalKwargs": { "points": "", "color": "", "target": "" },
+      "resolvesEntity": null,
+      "settleMs": 700,
+      "colors": ["color"],
+      "authoringRole": "inline_cue",
+      "sourceNote": "Provisional working. Thinking-surface marks never become truth-surface content."
+    },
+    "whiteboard.dots": {
+      "description": "Draw a countable group of dots, optionally in a 5-frame or 10-frame",
+      "minArgs": 0, "maxArgs": 0,
+      "requiredKwargs": ["id", "count"],
+      "optionalKwargs": { "arrange": "line", "token": "dot", "x": "50", "y": "50", "color": "", "label": "", "region": "", "conceal": "false" },
+      "resolvesEntity": null,
+      "settleMs": 900,
+      "enums": { "conceal": ["true", "false"], "arrange": ["line", "array", "five_frame", "ten_frame", "scatter", "number_cube"], "token": ["dot", "cube", "square", "triangle", "star", "counter"] },
+      "numeric": ["count", "x", "y"],
+      "colors": ["color"],
+      "authoringRole": "inline_cue"
+    },
+    "whiteboard.shape": {
+      "description": "Draw a named flat or solid shape",
+      "minArgs": 0, "maxArgs": 0,
+      "requiredKwargs": ["id", "shape"],
+      "optionalKwargs": { "x": "50", "y": "50", "size": "md", "color": "", "label": "", "fill": "false", "region": "", "conceal": "false" },
+      "resolvesEntity": null,
+      "settleMs": 800,
+      "enums": { "conceal": ["true", "false"], "shape": ["circle", "oval", "square", "rectangle", "triangle", "hexagon", "trapezoid", "rhombus", "pentagon", "cube", "sphere", "cone", "cylinder", "pyramid"], "size": ["sm", "md", "lg", "xl"], "fill": ["true", "false"] },
+      "numeric": ["x", "y"],
+      "colors": ["color"],
+      "authoringRole": "inline_cue"
+    },
+    "whiteboard.count": {
+      "description": "Number each part of something on the board, one at a time",
+      "minArgs": 0, "maxArgs": 0,
+      "requiredKwargs": ["target"],
+      "optionalKwargs": { "what": "items", "from": "1", "pace": "600", "color": "", "id": "" },
+      "resolvesEntity": "board",
+      "settleMs": 4000,
+      "enums": { "what": ["items", "corners", "sides"] },
+      "numeric": ["from"],
+      "durations": ["pace"],
+      "colors": ["color"],
+      "authoringRole": "inline_cue",
+      "sourceNote": "Each dot, corner or side is ringed and numbered in turn. The count marks are a thinking-layer annotation over the counted element; erasing that element removes them. Note `id` here is OPTIONAL, unlike the creating actions.",
+      "countSemantics": {
+        "targetRequired": true,
+        "targetKind": "board",
+        "annotationLayer": "thinking",
+        "annotationIsLinkedToTarget": true,
+        "erasingTargetRemovesAnnotation": true,
+        "countablesFrom": ["items", "corners", "sides"],
+        "idOptional": true
+      }
+    },
+    "whiteboard.erase": {
+      "description": "Remove one committed board element by id",
+      "minArgs": 0, "maxArgs": 0,
+      "requiredKwargs": ["target"],
+      "optionalKwargs": {},
+      "resolvesEntity": "board",
+      "settleMs": 500,
+      "authoringRole": "clear",
+      "sourceNote": "Commits a revision. The element is gone from the live board but stays in the trace."
+    },
+    "whiteboard.reveal": {
+      "description": "Animate a committed element into view over a duration",
+      "minArgs": 0, "maxArgs": 0,
+      "requiredKwargs": ["target"],
+      "optionalKwargs": { "duration": "1200" },
+      "resolvesEntity": "board",
+      "settleMs": 1200,
+      "durations": ["duration"],
+      "authoringRole": "inline_cue"
+    }
+  },
+  "clio": {
+    "$comment": "The six actions Clio declares, transcribed. Recorded because the superset adoption is a deliberate choice that must be visible, not because the SDK follows them. Note Clio has no settleMs field, uses a boolean resolvesEntity, and declares no count/math/arrow/highlight/scribble/dots/shape/erase/reveal.",
+    "whiteboard.show": { "description": "Show the full-screen whiteboard surface over the globe", "minArgs": 0, "maxArgs": 0, "requiredKwargs": [], "optionalKwargs": { "title": "", "subtitle": "", "style": "dark", "background": "#020617", "opacity": "0.94" }, "resolvesEntity": false, "authoringRole": "setup" },
+    "whiteboard.hide": { "description": "Hide the full-screen whiteboard surface", "minArgs": 0, "maxArgs": 0, "requiredKwargs": [], "optionalKwargs": {}, "resolvesEntity": false, "authoringRole": "clear", "sourceNote": "Clio ends the whiteboard beat here; the pinned VC source records that Clio's hide wipes marks." },
+    "whiteboard.clear": { "description": "Clear all whiteboard marks", "minArgs": 0, "maxArgs": 0, "requiredKwargs": [], "optionalKwargs": {}, "resolvesEntity": false, "authoringRole": "clear" },
+    "whiteboard.text": { "description": "Place freeform text on the whiteboard using screen-space coordinates", "minArgs": 0, "maxArgs": 1, "requiredKwargs": [], "optionalKwargs": { "id": "", "x": "50", "y": "50", "text": "", "size": "md", "color": "#f8fafc" }, "resolvesEntity": false, "authoringRole": "inline_cue", "sourceNote": "Clio has maxArgs 1, makes `id` optional, and carries no content_ref/region/conceal or numeric/enum constraints." },
+    "whiteboard.line": { "description": "Draw a freeform line on the whiteboard using screen-space coordinates", "minArgs": 0, "maxArgs": 0, "requiredKwargs": [], "optionalKwargs": { "id": "", "x1": "20", "y1": "50", "x2": "80", "y2": "50", "color": "#38bdf8", "stroke": "3", "style": "solid" }, "resolvesEntity": false, "authoringRole": "inline_cue" },
+    "whiteboard.box": { "description": "Draw a freeform box or panel on the whiteboard", "minArgs": 0, "maxArgs": 0, "requiredKwargs": [], "optionalKwargs": { "id": "", "x": "50", "y": "50", "width": "28", "height": "18", "color": "#fbbf24", "opacity": "0.18", "label": "" }, "resolvesEntity": false, "authoringRole": "inline_cue" }
+  }
+}

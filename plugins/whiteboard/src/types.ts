@@ -96,17 +96,31 @@ export function reduce(
       return { ...document, visible: false, revision };
     case 'clear':
       return clearLayer(document, change.layer, revision);
-    case 'commit':
-      return {
-        ...document,
-        revision,
-        elements: [...document.elements, { ...change.element, committedAt: revision }],
-      };
+    case 'commit': {
+      // Upsert by id. Committing an element whose id already exists **replaces** it rather than
+      // appending a second one: two elements with one id are indistinguishable to every later target
+      // reference, which would resolve to whichever ordering happens to favour. The validation stage
+      // separately refuses a *producer* reusing an id on a creating action, so this path is reached
+      // by a mark named from its target — re-highlighting an element updates its highlight instead of
+      // stacking a second one.
+      const element: BoardElement = { ...change.element, committedAt: revision };
+      const existing = document.elements.findIndex((candidate) => candidate.id === element.id);
+      const elements =
+        existing === -1
+          ? [...document.elements, element]
+          : document.elements.map((candidate, index) => (index === existing ? element : candidate));
+      return { ...document, revision, elements };
+    }
     case 'remove':
+      // Removing an element also removes marks **linked to it** (FR-228). The recovered count
+      // annotation is tied to the element it numbers, so erasing the counted element must not leave
+      // its numbering behind pointing at nothing.
       return {
         ...document,
         revision,
-        elements: document.elements.filter((element) => element.id !== change.id),
+        elements: document.elements.filter(
+          (element) => element.id !== change.id && element.attributes['target'] !== change.id,
+        ),
       };
     case 'reveal':
       return {

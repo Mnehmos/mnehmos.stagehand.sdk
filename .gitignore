@@ -14,3 +14,7 @@ coverage/
 *.log
 .DS_Store
 Thumbs.db
+
+# fetched pinned sources for source re-grounding; never committed
+.tmp-src/
+.tmp-i*/
