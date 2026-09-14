@@ -1,17 +1,20 @@
-// @stagehand/authoring
-//
-// Owner of FEAT-004 Compound Choreography & Beat IR [T0]
-//   requirements FR-187..FR-192 (6)
-//   tasks        T-035, T-036, T-037, T-038, T-039
-//   parity       TEST-177, TEST-178, TEST-179, TEST-180
-// Owner of FEAT-011 Evidence, Sources & Scene Presentation [T1]
-//   requirements FR-224..FR-227 (4)
-//   tasks        T-069, T-070, T-071, T-072, T-073
-//   parity       TEST-200, TEST-201, TEST-202
-//
-// Depends on: @stagehand/parser, @stagehand/registry, @stagehand/runtime, @stagehand/trace
-//
-// Scaffolded by M0. No feature behavior is implemented yet: this module exports nothing
-// until its feature lands through the Spec Kit flow in docs/governance/SPEC_KIT_RUNBOOK.md.
+/**
+ * @stagehand/authoring — author- and agent-facing helpers.
+ *
+ * Owner of FEAT-004 (beat objects) and FEAT-011 (presentation and receipt linting). Requirement
+ * ranges `FR-187..FR-192` and `FR-224..FR-227`; parity exits `TEST-177..TEST-180` and
+ * `TEST-200..TEST-202`. See `specs/006-compound-choreography/spec.md`.
+ *
+ * These are the shapes a producer or an agent reads and writes, kept separate from the SDK's internal
+ * IR: the beat object keeps its recovered `snake_case` field names because it is a wire shape, not an
+ * internal one, and normalising it would break producers that already emit it.
+ */
 
-export {};
+export {
+  describeBeat,
+  fromBeatObject,
+  NotABeatError,
+  toBeatObject,
+  type BeatObject,
+  type BeatStep,
+} from './beat-object.js';

@@ -1,6 +1,6 @@
 # @stagehand/core
 
-Canonical effect IR, compound/beat choreography types, and the public assembly surface.
+Compound choreography IR, atomic group execution, and the `mark.clip` protocol command.
 
 | | |
 |---|---|
@@ -9,17 +9,50 @@ Canonical effect IR, compound/beat choreography types, and the public assembly s
 | Directory | `packages/core` |
 | Owner features | FEAT-004 |
 | Internal dependencies | `@stagehand/parser`, `@stagehand/registry`, `@stagehand/runtime` |
-| Status | scaffolded (M0) — no behavior implemented |
+| Status | implemented — FEAT-004 converged through T-035..T-039 |
 
-## Requirements owned
+## Usage
 
-| Feature | v2 requirements | v2 tasks | Parity exits |
-|---|---|---|---|
-| FEAT-004 Compound Choreography & Beat IR | FR-187..FR-192 | T-035, T-036, T-037, T-038, T-039 | TEST-177, TEST-178, TEST-179, TEST-180 |
+```ts
+import { parseScript } from '@stagehand/parser';
+import { compileChoreography, executeChoreographyGroup, executeBeat } from '@stagehand/core';
 
-## Corpus seed
+const nodes = compileChoreography(parseScript(script, { lookupSchema: registry.lookup }));
+const host = { plugin: 'geo', commit: (effects) => scene.apply(effects) };
 
-- FEAT-004: `5` surfaces, `5` v1 requirements, `5` v1 tests — seed spec `docs/corpus/specs/`, issue [#13](https://github.com/Mnehmos/mnehmos.stagehand.sdk/issues/13)
+for (const node of nodes) {
+  if (node.kind === 'command') continue;
+  const result = node.kind === 'beat'
+    ? executeBeat(registry, node, { committer: host, observer })
+    : executeChoreographyGroup(registry, node, { committer: host });
+  // result.committed is false and the host untouched when any member was rejected
+}
+```
 
-See [V2_ID_LEDGER.md](../../docs/governance/V2_ID_LEDGER.md) for the canonical identity allocation and
-[SPEC_KIT_RUNBOOK.md](../../docs/governance/SPEC_KIT_RUNBOOK.md) for the per-feature workflow.
+## What this module guarantees
+
+- **An atomic group commits entirely or not at all**, and a rejected group never contacts the host —
+  not zero effects, zero calls. Every member is validated before any is committed, and a successful
+  group reaches the adapter in **one** call. Asserted per failure kind: unknown action, schema
+  violation, unresolved reference, failing pass.
+- **The IR reads no clock and schedules no timer.** Ordering and concurrency are data; a `pause=60000`
+  compiles to the number `60000` and executing it returns immediately. Proven with `Date.now` and
+  `setTimeout` replaced by throwing functions.
+- **Node identity is positional**, so two compilations of the same source yield identical ids and a
+  scheduler can reference a node across a re-compile.
+- **`mark.clip` is an ordinary capability.** Registered with a schema, validated and committed through
+  the normal pipeline. A command with a privileged path would sit outside the trust boundary.
+
+## One declared limitation
+
+`CompoundNode.commands` is **flattened**. `ENT-004` records that the recovered segment model promotes
+a nested compound's commands into its parent's list, so `[sequence][parallel][a][b][end][end]`
+compiles to **one** sequence whose commands are `[a, b]` — the `parallel` boundary is gone, and so is
+any inner atomicity.
+
+This is declared rather than hidden, because a consumer that assumed otherwise would build a
+scheduler on a boundary that was never there, and `TEST-177` pins it with a golden. Reconstructing
+inner boundaries would mean a second parser here or a tree-preserving output added to
+`FEAT-001`; neither is justified by corpus evidence. If a later feature needs scheduler control
+*inside* a compound, extend the parser's fold and record the need in
+`specs/006-compound-choreography/spec.md` §14 first.

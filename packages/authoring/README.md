@@ -9,7 +9,30 @@ Author-facing helpers: capability introspection digests, receipt linting, and ch
 | Directory | `packages/authoring` |
 | Owner features | FEAT-004, FEAT-011 |
 | Internal dependencies | `@stagehand/parser`, `@stagehand/registry`, `@stagehand/runtime`, `@stagehand/trace` |
-| Status | scaffolded (M0) — no behavior implemented |
+| Status | beat objects implemented (FEAT-004); FEAT-011 surfaces still scaffolded |
+
+## Beat objects (FEAT-004)
+
+```ts
+import { toBeatObject, fromBeatObject, describeBeat } from '@stagehand/authoring';
+
+const beat = toBeatObject(beatNode);
+// { beat_id, narration, visual_intent, stagehand_sequence: { steps } }
+```
+
+The object carries **exactly** the four fields `ENT-005` records — `beat_id`, `narration`,
+`visual_intent`, `stagehand_sequence.steps` — because "Clio intentionally added WHY + WHAT + HOW",
+and that is the whole vocabulary. Field names keep their recovered `snake_case` spelling: this is an
+agent-facing wire shape, not an internal one, and normalising it would break producers that already
+emit it.
+
+The round trip is lossy in exactly one respect and says so: an object carries no source text, so
+`raw` is reconstructed visibly as `[action]` rather than passed off as the producer's original. Every
+field the object *does* carry is restored, including the node id when you pass it, so a scheduler's
+reference survives.
+
+`toBeatObject` and `describeBeat` throw `NotABeatError` for a non-beat group rather than producing a
+beat-shaped object that looks right and describes the wrong thing.
 
 ## Requirements owned
 
