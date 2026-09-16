@@ -1,0 +1,84 @@
+{
+  "$comment": "Behavior-file provenance for FEAT-012's second pass (the reducer/validator/runtime behaviors, beyond the interface facts in virtual-classroom-whiteboard.json). The pinned reducer, validator, and runtime are the sources of the seven behaviors from the FEAT-012 behavior sweep. Hashes are of the files at the pinned commit, computed from the GitHub contents API (fetch -> hash -> discard; no source code is vendored — U-003 and Constitution XI).",
+  "provenance": [
+    {
+      "host": "Virtual Classroom",
+      "repo": "Mnehmos/virtual-classroom",
+      "commit": "cd7253608297efd57921c965b7440f4d4081842f",
+      "path": "src/board/document.ts",
+      "sha256": "50c9b8e54d64d454af0f42fb948f34b170ebcddc05202bba5b011f8b7cba52b3",
+      "lines": "910 total; reducer switch at 360-760; reveal fields 73-75; reveal default map 360-367; reveal cmd 537-539; dots fallback 738; advanceReveals 782-789; expireMarks 769-780",
+      "retrieved": "2026-09-16",
+      "visibility": "private (accessible to the maintainer and to this agent via gh)"
+    },
+    {
+      "host": "Virtual Classroom",
+      "repo": "Mnehmos/virtual-classroom",
+      "commit": "cd7253608297efd57921c965b7440f4d4081842f",
+      "path": "src/stagehand/validator.ts",
+      "sha256": "ed2881d7edbba6814fc90a8f38b4cceece1bedfaa66c9fa4233a192f29d74379",
+      "lines": "502 total; validateState entry 237; open-board rule 316; duplicate-id rule 321",
+      "retrieved": "2026-09-16",
+      "visibility": "private (accessible to the maintainer and to this agent via gh)"
+    },
+    {
+      "host": "Virtual Classroom",
+      "commit": "cd7253608297efd57921c965b7440f4d4081842f",
+      "repo": "Mnehmos/virtual-classroom",
+      "path": "src/app/runtime.ts",
+      "sha256": "288183a8136dcfd50a2ca7100d6cf6781bab2686d56ad0199b4c275d0c4cffe6",
+      "lines": "908 total; board.revision.committed emission 247, 570, 721; republish-on-revision 452-463; document guard 556; boardSurface visibility 846",
+      "retrieved": "2026-09-16",
+      "visibility": "private (accessible to the maintainer and to this agent via gh)"
+    },
+    {
+      "host": "Virtual Classroom",
+      "repo": "Mnehmos/virtual-classroom",
+      "commit": "cd7253608297efd57921c965b7440f4d4081842f",
+      "path": "src/board/document.test.ts",
+      "retrieved": "2026-09-16",
+      "sha256": "6de3ad255a4a3ded17ab5d98efeee084bd2dea2983559e10d3117a600be393c1",
+      "lines": "185 total (the pin's own whiteboard reducer tests; consulted during the behavior sweep)",
+      "visibility": "private (accessible to the maintainer and to this agent via gh)"
+    }
+  ],
+  "behaviors": {
+    "$comment": "The seven corrections from the behavior sweep, each pinned to its source location. These are the behaviors the SDK now reproduces.",
+    "spatial-stage": {
+      "summary": "Five-layer validation order with spatial as a contributed stage; horizontal AND vertical box-span checks.",
+      "source": "src/stagehand/validator.ts (validateState spatial section)",
+      "sdk": "plugins/whiteboard/src/resolve.ts boardSpatialStage()"
+    },
+    "state-stage": {
+      "summary": "Open-board and duplicate-id rules for exactly six creating actions; dots/shape/count upsert instead.",
+      "source": "src/stagehand/validator.ts:316-321",
+      "sdk": "plugins/whiteboard/src/registry-stage/boardStateStage()",
+      "sdk_path": "plugins/whiteboard/src/resolve.ts"
+    },
+    "no-op-revision": {
+      "summary": "advance()/expireMarks() mutate display state without touching doc.revision; the revision tracks committed changes only.",
+      "source": "src/board/document.ts:782-789 (advanceReveals returns elements with only reveal progress changed, no revision bump)",
+      "sdk": "plugins/whiteboard/src/types.ts reduce() 'advance' branch"
+    },
+    "write-on-timing": {
+      "summary": "Every created element carries reveal:0 plus its action-specific revealMs (text 700, math 1100, line 500, box 600, arrow 600, highlight 300, scribble 700, dots 900, shape 800, count max(400, total*pace)).",
+      "source": "src/board/document.ts:360-367 (base), 537-539 (reveal cmd), 738 (dots)",
+      "sdk": "plugins/whiteboard/src/types.ts reduce() 'commit' branch"
+    },
+    "countable-total": {
+      "summary": "countableTotal returns 0 sides for circle/oval (shapes with fewer than three corners have no side midpoints).",
+      "source": "src/board/document.ts geometry helpers",
+      "sdk": "plugins/whiteboard/src/types.ts countableTotal()"
+    },
+    "center-based-bounds": {
+      "summary": "Line/arrow use midpoint+span with min thickness 2; box stores the supplied center; no corner conversion.",
+      "source": "src/board/document.ts boundsForSpan and box reducer",
+      "sdk": "plugins/whiteboard/src/plugin.ts boundsOf()"
+    },
+    "registry-layer-contribution": {
+      "summary": "A plugin may contribute a validation stage at the registry layer; validateCommand runs built-in rules then contributed stages per layer.",
+      "source": "src/stagehand/validator.ts (layer dispatch)",
+      "sdk": "packages/registry/src/validate.ts:191-208"
+    }
+  }
+}
