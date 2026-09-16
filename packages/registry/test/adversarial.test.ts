@@ -316,3 +316,79 @@ describe('TEST-173 / type-name reporting', () => {
     expect(() => registry.register(colliding)).toThrow(/already registered/);
   });
 });
+
+describe('TEST-173 / registry-layer contributed stages', () => {
+  // FR-178 reconciliation: the pin's five-layer order includes registry-layer cross-field rules that
+  // a plugin owning a command family may need to contribute. These cases prove that such a
+  // contribution is accepted, runs after the built-in registry rules, and its rejection is terminal.
+
+  it('runs a contributed registry-layer stage after the built-in registry rules', () => {
+    const calls: string[] = [];
+    const plugin_stage: ValidationStage = {
+      layer: 'registry',
+      validate: (_command) => {
+        calls.push('contributed');
+        return [];
+      },
+    };
+    const result = validateCommand(registry, cmd('map.focus'), { stages: [plugin_stage] });
+    expect(result.ok).toBe(true);
+    // The built-in registry rules ran first (no rejection), then the contributed stage.
+    expect(calls).toEqual(['contributed']);
+  });
+
+  it('a contributed registry-stage rejection is terminal for later layers', () => {
+    let entityStageRan = false;
+    const entity: ValidationStage = {
+      layer: 'entity',
+      validate: () => {
+        entityStageRan = true;
+        return [];
+      },
+    };
+    const plugin_stage: ValidationStage = {
+      layer: 'registry',
+      validate: () => [
+        { code: 'E_SCHEMA', layer: 'registry', message: 'plugin cross-field rule rejected this command' },
+      ],
+    };
+    const result = validateCommand(registry, cmd('map.focus'), { stages: [entity, plugin_stage] });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.layer).toBe('registry');
+      expect(result.errors[0]?.message).toContain('plugin cross-field rule');
+    }
+    expect(entityStageRan, 'entity layer ran after a registry-layer rejection').toBe(false);
+  });
+
+  it('a contributed registry stage that passes does not block later layers', () => {
+    const spatial: ValidationStage = {
+      layer: 'spatial',
+      validate: () => [],
+    };
+    const plugin_stage: ValidationStage = {
+      layer: 'registry',
+      validate: () => [],
+    };
+    const result = validateCommand(registry, cmd('map.focus'), { stages: [plugin_stage, spatial] });
+    expect(result.ok).toBe(true);
+  });
+
+  it('a plugin contributing at layer "registry" cannot reject before the syntax layer', () => {
+    // The syntax layer is always built-in and runs first. A plugin cannot inject a syntax-layer
+    // rejection, which is what prevents a host from repurposing the parser's contract.
+    let ran = false;
+    const stage: ValidationStage = {
+      layer: 'registry',
+      validate: () => {
+        ran = true;
+        return [];
+      },
+    };
+    // An action with malformed syntax should be caught before any contributed stage runs.
+    const result = validateCommand(registry, cmd('not_dotted'), { stages: [stage] });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.layer).toBe('syntax');
+    expect(ran).toBe(false);
+  });
+});

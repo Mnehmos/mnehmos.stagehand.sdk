@@ -69,10 +69,13 @@ list.
   → SURF-104 → CTR-104
 
 - **FR-178 · Ordered, pluggable layers.** Validation MUST run in the fixed layer order
-  `syntax → registry → entity → state → spatial`. The syntax and registry layers are built in;
-  hosts and plugins MUST be able to contribute further stages without modifying the core validator.
-  The first rejecting stage is terminal for the command: later stages MUST NOT run, and no later
-  stage may override or soften an earlier rejection.
+  `syntax → registry → entity → state → spatial`. The syntax layer is built in and has no
+  contributed stages; every other layer runs its built-in rules first and then any contributed
+  stages for that layer, so hosts and plugins MUST be able to contribute without modifying the core
+  validator — including at the **registry** layer, where a plugin that owns a command family may
+  need cross-field rules the built-in structural check cannot express. The first rejecting stage is
+  terminal for the command: later stages MUST NOT run, and no later stage may override or soften an
+  earlier rejection.
   → CTR-121 · INV-004
 
 - **FR-179 · Validation result contract.** Validation MUST return a discriminated result: an
