@@ -1,0 +1,212 @@
+{
+  "$comment": "Pinned-source evidence for FEAT-007 (Geospatial Camera & View Framing). Interface facts only - schemas, vocabularies, validation rules, resolution rules, and compiler mappings - with content hashes for audit. No source code is vendored. Clio is not license-gated (U-002 is LLM-Chess, U-003 is Virtual Classroom); this file follows the same discipline as docs/evidence/virtual-classroom-whiteboard.json, which already records Clio interface facts.",
+  "provenance": [
+    {
+      "host": "Clio",
+      "repo": "Mnehmos/clio",
+      "commit": "03b1e1fff2254f5f97947ea249ad84827118136e",
+      "path": "src/stagehand/types.ts",
+      "sha256": "210870690a1c3dd83559285ffc69467028d344bbca193f49b22f4f9d6a94830d",
+      "lines": "12-18 MAP_MODE_VALUES; 25-28/77-79/93 action union; 304-359 map.* schemas; 832-878 camera.* schemas; 959-974 camera.follow_marker",
+      "retrieved": "2026-09-16",
+      "visibility": "private (accessible to the maintainer and to this agent via gh)",
+      "note": "This hash independently matches the Clio types.ts hash already recorded in docs/evidence/virtual-classroom-whiteboard.json, so the fetch is cross-validated against a prior retrieval."
+    },
+    {
+      "host": "Clio",
+      "repo": "Mnehmos/clio",
+      "commit": "03b1e1fff2254f5f97947ea249ad84827118136e",
+      "path": "src/stagehand/validator.ts",
+      "sha256": "bb7f5dcb7efec130a3870a154374c2efc60c0bd1a711564099a03c6bffe88b8b",
+      "lines": "48-51 NUMERIC_KWARGS; 130-140 ARG_ENUMS (map.mode); 152-158 ENTITY_REF_REQUIREMENTS; 253-274 entity ref requirement; 277-289 numeric; 321-332 arg enums; 439-451 entity lists; 454-471 map.fit requirements",
+      "retrieved": "2026-09-16",
+      "visibility": "private (accessible to the maintainer and to this agent via gh)"
+    },
+    {
+      "host": "Clio",
+      "repo": "Mnehmos/clio",
+      "commit": "03b1e1fff2254f5f97947ea249ad84827118136e",
+      "path": "src/stagehand/runtime.ts",
+      "sha256": "a6621e9ff705b8d8a6e08096b4953db4ab748419f20f2681eedd89c8f7cf55d4",
+      "lines": "56 POINT_BOUNDS_PADDING_DEGREES=0.25; 208-222 map.focus resolution; 224-261 map.fit resolution; 302-307 splitEntityList; 309-326 boundsForEntity; 359-407 mergeBounds (antimeridian); 411-419 entityCenter",
+      "retrieved": "2026-09-16",
+      "visibility": "private (accessible to the maintainer and to this agent via gh)"
+    },
+    {
+      "host": "Clio",
+      "repo": "Mnehmos/clio",
+      "commit": "03b1e1fff2254f5f97947ea249ad84827118136e",
+      "path": "src/stagehand/adapter.ts",
+      "sha256": "c13039ddea7d6ebe3fe84ceb0e726f61319156924136fa5311d4658783078b8e",
+      "lines": "62-79 compileV2Command dispatch; 96-113 compileCameraCenter; 115-131 compileCameraFocusRegion; 133-143 compileCameraEstablishGlobe; 239-247 V2_TOOL_ACTIONS",
+      "retrieved": "2026-09-16",
+      "visibility": "private (accessible to the maintainer and to this agent via gh)"
+    },
+    {
+      "host": "Clio",
+      "repo": "Mnehmos/clio",
+      "commit": "03b1e1fff2254f5f97947ea249ad84827118136e",
+      "path": "src/stagehand/palette.ts",
+      "sha256": "fe64e2ec2973872d05e7de93bf1c3c78c706539aeedcc179bf0a59804adfe075",
+      "lines": "18 ZoomLevel (from ENUM_VOCAB.RegionScale); 44-51 ZOOM_LEVEL_TO_MAXZOOM; 92-97 resolveZoomLevel",
+      "retrieved": "2026-09-16",
+      "visibility": "private (accessible to the maintainer and to this agent via gh)"
+    }
+  ],
+  "vocabularies": {
+    "mapModes": ["political", "satellite", "street", "terrain", "historical_overlay"],
+    "mapModesNote": "MAP_MODE_VALUES. Applied as an enum to the single positional argument of map.mode, not to a kwarg.",
+    "zoomLevels": {
+      "globe": 1.5,
+      "hemisphere": 2.5,
+      "continent": 3.5,
+      "regional": 4.6,
+      "local": 6.5,
+      "city": 9.0
+    },
+    "zoomLevelsNote": "ZOOM_LEVEL_TO_MAXZOOM, MapLibre maxZoom semantics. Tuned so regional frames a country pair and city frames a block.",
+    "zoomResolutionNote": "resolveZoomLevel(level, fallback) returns ZOOM_LEVEL_TO_MAXZOOM[level] ?? fallback, and the adapter passes fallback 4.6. Because 'regional' is also 4.6, an unrecognised zoom_level is indistinguishable from the default: the pin does not reject it. There is no ENUM_KWARGS entry for zoom_level."
+  },
+  "actions": {
+    "map.view": {
+      "description": "Set camera position and zoom level",
+      "minArgs": 0,
+      "maxArgs": 0,
+      "requiredKwargs": [],
+      "optionalKwargs": { "lat": "28", "lon": "48", "zoom": "4" },
+      "resolvesEntity": false,
+      "authoringRole": "setup"
+    },
+    "map.focus": {
+      "description": "Focus camera on a named entity",
+      "minArgs": 0,
+      "maxArgs": 1,
+      "requiredKwargs": [],
+      "optionalKwargs": { "entity": "", "zoom": "" },
+      "resolvesEntity": true,
+      "authoringRole": "inline_cue",
+      "requiresFollowingText": true,
+      "nextTextShouldMentionTarget": true
+    },
+    "map.fit": {
+      "description": "Frame multiple registered entities or explicit camera bounds",
+      "minArgs": 0,
+      "maxArgs": 0,
+      "requiredKwargs": [],
+      "optionalKwargs": {
+        "entities": "",
+        "west": "",
+        "south": "",
+        "east": "",
+        "north": "",
+        "padding": "80",
+        "maxZoom": ""
+      },
+      "resolvesEntity": true,
+      "authoringRole": "setup"
+    },
+    "map.mode": {
+      "description": "Switch rhetorical map mode: political, satellite, street, terrain, or historical overlay",
+      "minArgs": 1,
+      "maxArgs": 1,
+      "requiredKwargs": [],
+      "optionalKwargs": {},
+      "resolvesEntity": false,
+      "authoringRole": "setup",
+      "argEnum": "MAP_MODE_VALUES applied to args[0]"
+    },
+    "camera.center": {
+      "description": "Center the camera on a target entity with named zoom level. `context_entities` are highlighted/visible but do NOT drag the bounds - fixes mixed-scale fit framing.",
+      "minArgs": 0,
+      "maxArgs": 1,
+      "requiredKwargs": [],
+      "optionalKwargs": {
+        "target": "",
+        "context_entities": "",
+        "zoom_level": "regional",
+        "padding": "80"
+      },
+      "resolvesEntity": true,
+      "authoringRole": "setup"
+    },
+    "camera.focus_region": {
+      "description": "Frame a single region at the requested zoom level.",
+      "minArgs": 0,
+      "maxArgs": 1,
+      "requiredKwargs": [],
+      "optionalKwargs": { "target": "", "zoom_level": "regional", "padding": "80" },
+      "resolvesEntity": true,
+      "authoringRole": "setup"
+    },
+    "camera.establish_globe": {
+      "description": "Pull back to a globe-scale establishing shot.",
+      "minArgs": 0,
+      "maxArgs": 0,
+      "requiredKwargs": [],
+      "optionalKwargs": { "lat": "20", "lon": "0", "zoom": "1.4" },
+      "resolvesEntity": false,
+      "authoringRole": "setup"
+    },
+    "camera.follow_marker": {
+      "description": "Set or clear the chase-camera policy. `track=active_highlights` makes the camera auto-fit to all currently-active highlights and arrows as the scene evolves. `track=none` releases.",
+      "minArgs": 0,
+      "maxArgs": 0,
+      "requiredKwargs": [],
+      "optionalKwargs": {
+        "track": "active_highlights",
+        "min_zoom": "local",
+        "max_zoom": "regional",
+        "padding": "80"
+      },
+      "resolvesEntity": false,
+      "authoringRole": "setup",
+      "note": "A policy command. It appears in no compileV2Command branch and in no canonicalizeCommand case: there is nothing to resolve and nothing to compile. Zero occurrences of the action name in runtime.ts."
+    }
+  },
+  "validationRules": {
+    "numericKwargs": {
+      "map.view": ["lat", "lon", "zoom"],
+      "map.focus": ["zoom"],
+      "map.fit": ["west", "south", "east", "north", "padding", "maxZoom"]
+    },
+    "numericRule": "Finite-number check only. The pin's lat/lon range checks (-180..180, -90..90) live in validatePieceCoordinates and are applied to piece.place, piece.move and entity.propose - NOT to map.view or camera.establish_globe. Faithful parity therefore bounds no camera coordinate.",
+    "argEnums": {
+      "map.mode": ["political", "satellite", "street", "terrain", "historical_overlay"]
+    },
+    "argEnumRule": "Only args[0] is checked, and only when at least one arg is present.",
+    "entityRefRequirements": {
+      "map.focus": ["entity"]
+    },
+    "entityRefRule": "A single required key accepts either the kwarg or a positional argument: 'map.focus requires an entity ref via entity=... or positional arg'.",
+    "entityListRule": "For map.fit, when entities is non-empty it is split on /\\s*(?:,|\\||;)\\s*/ and must yield at least one reference. Note the separators include pipe and semicolon, which the SDK core's comma-only list splitter does not accept - so this rule belongs in a contributed stage, not in a core entityRefList type.",
+    "mapFitRequirements": "map.fit requires entities=... or all four of west/south/east/north. Supplying a partial bound set is rejected: 'map.fit bounds require west, south, east, and north'.",
+    "noEnumOnZoom": "zoom_level, min_zoom and max_zoom carry no ENUM_KWARGS entry; an unrecognised value resolves through the palette fallback rather than being rejected."
+  },
+  "resolution": {
+    "splitEntityList": "value.split(/\\s*(?:,|\\||;)\\s*/) then trim and drop empties.",
+    "map.focus": "Resolve the ref, then entityCenter(entity) supplies lon/lat. A resolved entity with no centre is reported unresolved. An unresolvable ref makes the command not ok - it is never silently dropped.",
+    "map.fit": "Split and resolve every ref. If any is missing, the command fails without computing bounds. Otherwise boundsForEntity per entity, then mergeBounds, then west/south/east/north are written onto the command.",
+    "boundsForEntity": "GeoJSON geometry bounds when geometry is present (collectGeometryBounds walks nested coordinate arrays); otherwise a point box of lon/lat +/- POINT_BOUNDS_PADDING_DEGREES (0.25). Null when neither is available.",
+    "entityCenter": "entity.coordinates when present, else the centre of its bounds.",
+    "mergeBounds": "Antimeridian-aware. Naive min/max merge; if east-west span exceeds 180 degrees, shift bounds whose centre is in the western hemisphere by +360, re-merge, and keep whichever representation yields the smaller arc. A returned west may exceed 180 (for example west=105, east=265); normalisation to MapLibre's [-180,180] is the renderer's job, not the protocol's."
+  },
+  "compiler": {
+    "dispatch": "compileV2Command handles camera.center, camera.focus_region and camera.establish_globe. Anything else, including camera.follow_marker, is returned unchanged.",
+    "camera.center": {
+      "target": "map.fit",
+      "kwargs": { "entities": "<target>", "padding": "<padding>", "maxZoom": "resolveZoomLevel(zoom_level, 4.6)" },
+      "note": "context_entities is deliberately NOT forwarded into the fit's entity list. That omission is the fix for drag-centring on the largest entity."
+    },
+    "camera.focus_region": {
+      "target": "map.fit",
+      "kwargs": { "entities": "<target>", "padding": "<padding>", "maxZoom": "resolveZoomLevel(zoom_level, 4.6)" },
+      "note": "Identical to camera.center's output in the pinned source. The two actions differ in declared vocabulary (context_entities) and author intent, not in the primitive they compile to."
+    },
+    "camera.establish_globe": {
+      "target": "map.view",
+      "kwargs": { "lat": "<lat|20>", "lon": "<lon|0>", "zoom": "<zoom|1.4>" }
+    },
+    "v2ToolActions": ["camera.center", "camera.focus_region", "camera.establish_globe", "highlight.region", "highlight.location", "label.show", "route.draw"],
+    "v2ToolActionsNote": "The type predicate isV2ToolAction omits camera.follow_marker, confirming it is a policy rather than a compiled primitive."
+  }
+}
