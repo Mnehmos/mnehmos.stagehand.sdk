@@ -14,7 +14,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { activeElements, elementsOn, WhiteboardPlugin } from '../src/index.js';
+import { activeElements, elementsOn, pageById, WhiteboardPlugin } from '../src/index.js';
 
 /** Drive the plugin through its own committer, the way the runtime would. */
 function apply(plugin: WhiteboardPlugin, action: string, kwargs: Record<string, string> = {}): void {
@@ -138,5 +138,48 @@ describe('TEST-204 / the two are distinguishable after the same sequence', () =>
     apply(plugin, 'whiteboard.show');
     apply(plugin, 'whiteboard.clear');
     expect(plugin.revision).toBe(start + 3);
+  });
+});
+
+describe('TEST-204 / named page semantics', () => {
+  it('creates a new empty page, then restores page-1 content when switching back', () => {
+    // The pinned test switches to page-2 and back to page-1; the content must be there on return.
+    const plugin = seeded();
+    apply(plugin, 'whiteboard.show', { page: 'page-2' });
+
+    // page-2 starts empty.
+    expect(activeElements(plugin.document)).toEqual([]);
+    expect(pageById(plugin.document, 'page-2')).toBeDefined();
+    // page-1 content is preserved, not destroyed.
+    expect(pageById(plugin.document, 'page-1')?.elements).toHaveLength(3);
+
+    // Place something on page-2.
+    apply(plugin, 'whiteboard.text', { id: 'p2', text: 'on page two' });
+    expect(activeElements(plugin.document).find((e) => e.id === 'p2')).toBeDefined();
+
+    // Switch back to page-1.
+    apply(plugin, 'whiteboard.show', { page: 'page-1' });
+    expect(activeElements(plugin.document).map((e) => e.id)).toEqual(['e1', 'e2', 'e3']);
+    // And page-2 still has its own content.
+    expect(pageById(plugin.document, 'page-2')?.elements.map((e) => e.id)).toEqual(['p2']);
+  });
+
+  it('applies a title to the target page', () => {
+    const plugin = seeded();
+    apply(plugin, 'whiteboard.show', { page: 'page-1', title: 'Recap' });
+    expect(pageById(plugin.document, 'page-1')?.title).toBe('Recap');
+  });
+
+  it('reopening an existing page does not wipe it', () => {
+    const plugin = seeded();
+    apply(plugin, 'whiteboard.show', { page: 'page-1' });
+    expect(activeElements(plugin.document)).toHaveLength(3);
+  });
+
+  it('an unnamed show activates the current page without creating a new one', () => {
+    const plugin = seeded();
+    const pagesBefore = plugin.document.pages.length;
+    apply(plugin, 'whiteboard.show');
+    expect(plugin.document.pages.length).toBe(pagesBefore);
   });
 });
