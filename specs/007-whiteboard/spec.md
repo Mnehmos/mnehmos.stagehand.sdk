@@ -40,14 +40,27 @@ from the other side. Two things follow from that and shape the whole feature:
 ## 3. Functional Requirements
 
 - **FR-228 · Board document and revision model.** The plugin MUST maintain a board document holding
-  committed elements with stable ids, and MUST expose a monotonically increasing **revision** that
-  advances on every committed change and not on a rejected one. Committing an element whose id is
-  already present MUST replace it rather than append a second element with the same id, because two
-  elements sharing an id are indistinguishable to every later target reference. Removing an element
-  MUST also remove marks **linked to it**, so a `count` annotation cannot outlive the element it
-  numbers. The document MUST be plugin-owned: no core package holds or imports board state
-  (`ENT-010`).
+  named pages (a `show` with a `page` kwarg creates one that does not exist, reopens one that does
+  with its content intact, and updates a title) with committed elements carrying stable ids, and MUST
+  expose a monotonically increasing **revision** that advances on every committed change and not on a
+  rejected one — nor on renderer-frame progression: `advance()` moves reveal progress and retires
+  expired marks without touching the revision, because the revision tracks committed board changes
+  rather than display state. A reducer change that is a no-op MUST return the same document
+  (identity-equal), which is what makes the revision count changes rather than commands. For the six
+  content-creating actions (`text`, `math`, `line`, `box`, `arrow`, `scribble`) a committed id MUST be
+  **rejected at the state layer** as already present, because those are ids the avatar points at
+  later; for `dots`, `shape`, and `count` the pin upserts instead, so their derived ids replace. Every
+  created element MUST carry write-on timing — `reveal: 0` plus an action-specific `revealMs`
+  (text 700, math 1100, line 500, box 600, arrow 600, highlight 300, scribble 700, dots 900, shape
+  800; `count` scales as `max(400, total × pace)`) — and `reveal` re-arms that timing on its target.
+  Removing an element MUST also remove marks **linked to it**, so a `count` annotation cannot outlive
+  the element it numbers. The document MUST be plugin-owned: no core package holds or imports board
+  state (`ENT-010`).
   → ENT-010 · T-074
+
+  Bound note (DIV-012): point-anchored elements carry a nominal zero-size box at their declared
+  point. Placement, text flow, and collision avoidance are renderer concerns the pin drives from its
+  render loop, and a headless document that emitted guessed boxes would fabricate geometry.
 
 - **FR-229 · VC-superset capability schemas, recovered from the pinned source.** The plugin MUST
   register all **15 distinct** actions across the 21 owned surfaces — `whiteboard.show`, `.hide`,
@@ -74,19 +87,23 @@ from the other side. Two things follow from that and shape the whole feature:
   → SURF-035, SURF-058 → CTR-035, CTR-058
 
 - **FR-231 · Truth and thinking layers are isolated.** Elements MUST carry a layer of `truth` or
-  `thinking`. **Three** actions produce thinking-surface marks, as the pinned source states of each:
-  `scribble` ("thinking-surface marks never become truth-surface content"), `highlight` ("a
-  thinking-surface mark over a truth-surface element — it never alters the element"), and `count`
-  (numbering drawn over the element it counts). Every other action that creates an element commits to
-  `truth`; `reveal` and `erase` alter or remove an element rather than creating one. Reading either
-  layer MUST NOT include the other's elements, and clearing one MUST NOT clear the other. A
-  learner-facing view built from the truth layer must therefore be unable to contain a teacher's
-  rough working.
-  → SURF-065, SURF-066, SURF-069 → CTR-065, CTR-066, CTR-069 · T-077
+  `thinking`. **Four** actions produce thinking-surface marks, as the pinned reducer commits them:
+  `arrow` (committed with `base('thinking', ...)` — it shows direction between elements, an
+  annotation over the board rather than board content), `scribble` ("thinking-surface marks never
+  become truth-surface content"), `highlight` ("a thinking-surface mark over a truth-surface element
+  — it never alters the element"), and `count` (numbering drawn over the element it counts). Every
+  other action that creates an element commits to `truth`; `reveal` and `erase` alter or remove an
+  element rather than creating one. Reading either layer MUST NOT include the other's elements, and
+  clearing one MUST NOT clear the other. A learner-facing view built from the truth layer must
+  therefore be unable to contain a teacher's rough working.
+  → SURF-064, SURF-065, SURF-066, SURF-069 → CTR-064, CTR-065, CTR-066, CTR-069 · T-077
 
-- **FR-232 · `content_ref` resolves to canonical content.** A command carrying `content_ref` MUST
-  resolve to the board's stored content for that reference, returned **byte for byte** as committed.
-  An unresolvable reference MUST be rejected rather than substituted or re-parsed.
+- **FR-232 · `content_ref` resolves through the host's lesson-content pack.** A command carrying
+  `content_ref` MUST resolve through the **injected lesson-content resolver** — the same seam the
+  pinned runtime wires in (`opts.resolveContent`) — not against the board's own elements. A reference
+  the pack does not hold yields **empty content and still commits** (the content pack is the host's;
+  a miss is the host's to surface, not a protocol rejection), while `content_ref` and inline
+  `text`/`latex` are mutually exclusive at the **registry** layer.
   → T-076
 
 - **FR-233 · Board target resolution.** Every action the pinned source declares as resolving a
@@ -138,27 +155,34 @@ overlap: six actions carry two surface identities.
 | `clear` | Elements removed; revision advances. |
 | `hide` then `clear` then `show` | Board empty: `clear` removed content that `hide` had preserved. |
 | `scribble` | Element committed to `thinking`; truth layer unchanged. |
+| `arrow` | Element committed to `thinking` (the pinned reducer's `base('thinking', ...)`); truth layer unchanged. |
+| Any created element | Carries `reveal: 0` and its action's `revealMs`; `advance()` moves reveal toward 1 without spending a revision. |
+| `count` on a committed element | Thinking-layer annotation carrying `what`/`from`/`pace`, linked to the target; write-on budget `max(400, total × pace)`. |
 | `highlight` on a committed element | Thinking-layer mark linked to the target; the element itself byte-identical. |
-| `count` on a committed element | Thinking-layer annotation carrying `what`/`from`/`pace`, linked to the target. |
 | `erase` of a counted element | Both the element and its count annotation are removed. |
-| Commit reusing an existing id | Replaces that element; no duplicate id exists in the document. |
-| A text/math command carrying `content_ref` | Accepted by the registry, resolved by the entity stage, content stored byte for byte. |
-| A text/math command carrying an unknown `content_ref` | `E_UNRESOLVED_REF` at the entity layer; nothing committed. |
+| Commit reusing an existing id | Replaces that element (`dots`/`shape`/`count`); the six creating actions are refused at the state layer instead — see FR-228. |
+| A text/math command carrying `content_ref` | Accepted by the registry, resolved through the injected lesson-content pack, content stored byte for byte. |
+| A text/math command carrying an unknown `content_ref` | Commits with empty content — a pack miss is the host's to surface, not a protocol rejection. |
+| A text/math command carrying `content_ref` **and** inline `text`/`latex` | `E_SCHEMA` at the **registry** layer: content is inline or referenced, never both. |
 | Read of the truth layer after a `scribble` | Does not contain the scribble. |
 | `clear` on one layer | The other layer's elements are untouched. |
 | `highlight`/`erase`/`reveal` with a known target | Applied to that element. |
 | `highlight`/`erase`/`reveal` with an unknown target | `E_UNRESOLVED_REF`; nothing committed. |
-| `content_ref` to stored content | Resolved byte for byte. |
-| `content_ref` to nothing | `E_UNRESOLVED_REF`; nothing committed. |
+| `content_ref` to a pack entry | Resolved byte for byte. |
+| `content_ref` to nothing in the pack | Empty content; the element still commits. |
 | Rejected command | Revision unchanged; committer never called. |
+| `text`/`math`/`line`/`box`/`arrow`/`scribble` with a committed id | `E_STATE` at the state layer: "already committed. Ids must be unique within a page." |
+| `text`/`math`/`line`/`box`/`arrow`/`scribble` with no board open | `E_STATE` at the state layer: "no board page is open. Call whiteboard.show first." |
+| `dots`/`shape`/`count` reusing an id | Upserted (replaced), not rejected — the pinned reducer upserts these three. |
+| Coordinate kwarg outside 0-100, or a box span past an edge | `E_SCHEMA` at the spatial layer. |
 
 ## 7. Error Catalog
 
 | Code | Where |
 |---|---|
-| `E_SCHEMA` | From `FEAT-002`, for a malformed board command. |
-| `E_UNRESOLVED_REF` | Unknown board target or `content_ref`; raised here as an entity-layer stage. |
-| `E_STATE` | A board operation the current state forbids — not currently reachable, but reserved rather than invented away. |
+| `E_SCHEMA` | From `FEAT-002`, for a malformed board command; also the plugin's registry-layer (content_ref exclusivity) and spatial-layer (0-100 board space) rules. |
+| `E_UNRESOLVED_REF` | Unknown board target; raised here as an entity-layer stage. (`content_ref` misses are **not** rejections — see FR-232.) |
+| `E_STATE` | A board operation the current state forbids: no open page, or a duplicate id on the six creating actions. |
 
 ## 8. State Transitions
 
@@ -188,6 +212,18 @@ core's ordering.
   forward as accepted extras — a Clio producer that sends them is corrected rather than silently
   ignored, because silently ignoring a kwarg is how a producer learns the wrong vocabulary.
 
+- **DIV-012** — Point-anchored board elements carry a nominal zero-size box; placement, text flow,
+  and collision avoidance are renderer concerns the pinned reducer does not own (its renderer computes
+  real boxes at render time). A headless document that emitted guessed boxes would fabricate
+  geometry. `TEST-203`'s schema assertions are unaffected; `TEST-207`'s target resolution is
+  box-independent.
+
+- **DIV-013** — Core value-type grammars accept the superset the recovered hosts share: minutes in
+  durations, `rgb()`/`rgba()` colours, case-insensitive enums (unless a schema declares
+  `caseSensitive`). Booleans stay exactly `true`/`false`. Recorded at the `FEAT-002` owner
+  (`docs/governance/divergences.json`), where its parity coverage lives; the whiteboard slice is
+  exercised by `TEST-203`.
+
 ## 11. Parity Exits
 
 - **TEST-203** — Full 21-surface recovered schema conformance.
@@ -212,13 +248,15 @@ core's ordering.
    resolves against, and the settle budget. A mutation of any one of them fails `TEST-203`.
 3. A board that is hidden still holds every element, and one that is cleared holds none — asserted
    after the same intervening command sequence.
-4. A scribble, a highlight, and a count annotation are each absent from the truth layer and present
-   in the thinking layer; clearing truth leaves all three.
-5. `content_ref` returns the stored bytes, verified by comparison against what was committed rather
-   than against a constant, and reaching the resolver **through registry validation** rather than
-   only at the helper.
-6. An unknown target or `content_ref` produces `E_UNRESOLVED_REF` and leaves the revision unchanged.
-7. `pnpm check` is green.
+4. A scribble, an arrow, a highlight, and a count annotation are each absent from the truth layer and
+   present in the thinking layer; clearing truth leaves all four.
+5. `content_ref` resolves through the injected lesson-content pack, verified by comparison against
+   the pack entry rather than against a constant, and reaching the resolver **through registry
+   validation** rather than only at the helper.
+6. An unknown target produces `E_UNRESOLVED_REF` and leaves the revision unchanged.
+7. Every created element carries `reveal: 0` and its action's `revealMs`; `advance()` progresses it
+   without spending a revision.
+8. `pnpm check` is green.
 
 ## 14. Open Questions
 

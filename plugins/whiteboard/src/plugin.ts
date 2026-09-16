@@ -107,6 +107,25 @@ export interface WhiteboardPluginOptions {
   readonly clock?: () => number;
 }
 
+/**
+ * Write-on budget per creating action, in milliseconds (document.ts:427-596).
+ *
+ * "Elements animate in over revealMs" — the pin assigns each action its own pace, so a fraction
+ * typesets slower than a word of text appears and a highlight lands near-instantly. `count` is not
+ * in this table because its budget scales with the thing counted: `max(400, total * pace)`.
+ */
+const WRITE_ON_MS: Readonly<Record<string, number>> = {
+  'whiteboard.text': 700,
+  'whiteboard.math': 1100,
+  'whiteboard.line': 500,
+  'whiteboard.box': 600,
+  'whiteboard.arrow': 600,
+  'whiteboard.highlight': 300,
+  'whiteboard.scribble': 700,
+  'whiteboard.dots': 900,
+  'whiteboard.shape': 800,
+};
+
 /** Bounds a producer's declared coordinates describe, in the recovered 0-100 space. */
 function boundsOf(kwargs: Readonly<Record<string, unknown>>, action: string): BoardBounds {
   const num = (key: string, fallback: number): number => {
@@ -319,6 +338,8 @@ export class WhiteboardPlugin implements EffectCommitter {
               // `duration=0` means permanent until cleared, which is a different thing from a very
               // short duration and needs `null` to say so.
               expiresAt: duration > 0 ? this.#clock() + duration : null,
+              reveal: 0,
+              revealMs: WRITE_ON_MS[effect.action] ?? 0,
               ...(concealed ? { concealed } : {}),
             },
           };
@@ -353,6 +374,10 @@ export class WhiteboardPlugin implements EffectCommitter {
               bounds: source.bounds,
               targetId: source.id,
               total,
+              // The count's write-on is per item: counting eight things takes twice as long as
+              // counting four, which is what makes it read as counting rather than as a total.
+              reveal: 0,
+              revealMs: Math.max(400, total * perItem),
               ...(concealed ? { concealed } : {}),
             },
           };
@@ -379,6 +404,8 @@ export class WhiteboardPlugin implements EffectCommitter {
             content,
             attributes,
             bounds,
+            reveal: 0,
+            revealMs: WRITE_ON_MS[effect.action] ?? 0,
             ...(prefix !== undefined && target !== '' ? { targetId: target } : {}),
             ...(kind === 'dots' ? { count: Math.max(0, Math.round(Number(kwargs['count'] ?? 1)) || 0) } : {}),
             ...(concealed ? { concealed } : {}),
