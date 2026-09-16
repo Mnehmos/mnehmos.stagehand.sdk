@@ -209,8 +209,10 @@ describe('TEST-203 / the registered schemas carry those constraints', () => {
       expect(spec.type.kind, `${action}.${key} empty default on a type that accepts it`).toBe('string');
     }
 
-    // And the registry tolerates it where the default says it means "unset".
+    // And the registry tolerates it where the default says it means "unset". The board is opened
+    // first because the state stage requires it for the six creating actions.
     const plugin = new Plugin();
+    plugin.commit([{ plugin: 'whiteboard', action: 'whiteboard.show', payload: { args: [], kwargs: {}, refs: [] } }]);
     const verdict = validateCommand(
       plugin.registry,
       { action: 'whiteboard.text', args: [], kwargs: { id: 'x', color: '' }, raw: '[whiteboard.text]' },

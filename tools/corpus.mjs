@@ -54,6 +54,7 @@ function runValidator() {
     const proc = spawnSync(bin, [path.join('tools', 'validate_corpus.py')], {
       cwd: CORPUS,
       encoding: 'utf8',
+      env: { ...process.env, PYTHONUTF8: '1' },
     });
     if (proc.error && proc.error.code === 'ENOENT') continue;
     const stdout = (proc.stdout ?? '').trim();

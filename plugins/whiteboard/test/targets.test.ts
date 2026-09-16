@@ -15,11 +15,13 @@
 
 import { describe, expect, it } from 'vitest';
 import { validateCommand } from '@stagehand/registry';
-import { activeElements, isTargetAction, resolveTarget, WhiteboardPlugin } from '../src/index.js';
-import { CORE_SCHEMAS } from './fixtures.js';
+import { activeElements, isTargetAction, resolveTarget, TARGET_ACTIONS, WhiteboardPlugin } from '../src/index.js';
 
 function seeded(): WhiteboardPlugin {
   const plugin = new WhiteboardPlugin();
+  plugin.commit([
+    { plugin: 'whiteboard', action: 'whiteboard.show', payload: { args: [], kwargs: {}, refs: [] } },
+  ]);
   plugin.commit([
     { plugin: 'whiteboard', action: 'whiteboard.text', payload: { args: [], kwargs: { id: 'e1', text: 'first' }, refs: [] } },
     { plugin: 'whiteboard', action: 'whiteboard.text', payload: { args: [], kwargs: { id: 'e2', text: 'second' }, refs: [] } },
@@ -28,8 +30,8 @@ function seeded(): WhiteboardPlugin {
 }
 
 const stageFor = (plugin: WhiteboardPlugin) => ({
-  validate: (command: { action: string; args: string[]; kwargs: Record<string, string>; raw: string }, context = {}) => {
-    const verdict = validateCommand(makeRegistry(), command, { stages: [...plugin.stages, boardStateStage(() => plugin.document)], context });
+  validate: (command: { action: string; args: string[]; kwargs: Record<string, string>; raw: string }) => {
+    const verdict = validateCommand(plugin.registry, command, { stages: plugin.stages });
     return verdict.ok ? [] : verdict.errors;
   },
 });
@@ -42,7 +44,7 @@ describe('TEST-207 / a known target resolves', () => {
   it('resolves for every target-taking action', () => {
     const plugin = seeded();
     for (const action of TARGET_ACTIONS) {
-      const errors = stageFor(plugin).validate(targetCommand(action, 'e1'), {}) ?? [];
+      const errors = stageFor(plugin).validate(targetCommand(action, 'e1')) ?? [];
       expect(errors, `${action} with a known target`).toEqual([]);
     }
   });
@@ -50,14 +52,14 @@ describe('TEST-207 / a known target resolves', () => {
   it('resolves against the live document, not a snapshot taken at registration', () => {
     const plugin = seeded();
     const stage = stageFor(plugin);
-    expect(stage.validate(targetCommand('whiteboard.highlight', 'e3'), {}) ?? []).toHaveLength(1);
+    expect(stage.validate(targetCommand('whiteboard.highlight', 'e3')) ?? []).toHaveLength(1);
 
     // Commit e3, and the same stage instance now resolves it: the reader is a function, so the stage
     // cannot be holding a board from before.
     plugin.commit([
       { plugin: 'whiteboard', action: 'whiteboard.text', payload: { args: [], kwargs: { id: 'e3', text: 'third' }, refs: [] } },
     ]);
-    expect(stage.validate(targetCommand('whiteboard.highlight', 'e3'), {}) ?? []).toEqual([]);
+    expect(stage.validate(targetCommand('whiteboard.highlight', 'e3')) ?? []).toEqual([]);
   });
 
   it('names the board actions that take a target, as the pinned source declares them', () => {
@@ -76,7 +78,7 @@ describe('TEST-207 / an unknown target is unresolved, never guessed', () => {
   it('reports E_UNRESOLVED_REF for every target-taking action', () => {
     const plugin = seeded();
     for (const action of TARGET_ACTIONS) {
-      const errors = stageFor(plugin).validate(targetCommand(action, 'nope'), {}) ?? [];
+      const errors = stageFor(plugin).validate(targetCommand(action, "nope")) ?? [];
       expect(errors, `${action} with an unknown target`).toHaveLength(1);
       expect(errors[0]?.code).toBe('E_UNRESOLVED_REF');
       expect(errors[0]?.message).toContain('nope');
@@ -103,7 +105,7 @@ describe('TEST-207 / a rejected command leaves the revision alone', () => {
     const before = plugin.revision;
     // The stage rejects, so the runtime never calls the committer — which is the only place the
     // revision moves. Simulating that: no commit, and the revision must be untouched.
-    const errors = stageFor(plugin).validate(targetCommand('whiteboard.erase', 'ghost'), {});
+    const errors = stageFor(plugin).validate(targetCommand("whiteboard.erase", "ghost"));
     expect(errors).toHaveLength(1);
     expect(plugin.revision).toBe(before);
     expect(activeElements(plugin.document)).toHaveLength(2);
@@ -223,13 +225,12 @@ describe('TEST-207 / duplicate ids are refused rather than shadowing', () => {
     const plugin = seeded();
     const errors = stageFor(plugin).validate(
       { action: 'whiteboard.text', args: [], kwargs: { id: 'e1', text: 'again' }, raw: '[whiteboard.text]' },
-      {},
     ) ?? [];
     expect(errors).toHaveLength(1);
     expect(errors[0]?.code).toBe('E_STATE');
     // Two elements the board cannot tell apart would make every later target reference resolve to
     // whichever ordering happens to favour.
-    expect(errors[0]?.message).toContain('already exists');
+    expect(errors[0]?.message).toContain('already committed');
   });
 
   it('allows an id that was erased and then reused', () => {
@@ -240,7 +241,6 @@ describe('TEST-207 / duplicate ids are refused rather than shadowing', () => {
     expect(
       stageFor(plugin).validate(
         { action: 'whiteboard.text', args: [], kwargs: { id: 'e1', text: 'reused' }, raw: '[whiteboard.text]' },
-        {},
       ) ?? [],
     ).toEqual([]);
   });
