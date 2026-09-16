@@ -35,6 +35,26 @@
       "rationale": "The pinned Virtual Classroom source states the divergence itself: 'Deliberate divergence from Clio, where `whiteboard.hide` wipes marks. In a classroom the projector occludes the board; it does not end its presentation.' Clio's surface list cannot express the difference — its data says only 'Hide the full-screen whiteboard surface' — so a reconstruction that compressed both hosts into one behavior string had to pick one, and picking Clio's destroys a lesson's work. Adopting the superset is the choice the corpus's own FEAT-012 intent implies ('a reusable screen-space explanatory canvas' whose content survives being hidden), and it is recorded rather than left implicit.",
       "parity_note": "Diverges from the Clio surfaces SURF-034..039 as declared in their own source. The VC contracts are the parity target, and docs/evidence/virtual-classroom-whiteboard.json records both sides so the difference is auditable. A Clio-behavior consumer that relied on `hide` wiping a board must call `whiteboard.clear` instead; that is the one behavioural change with a migration cost, and it is the change that makes content survivable. TEST-204 asserts the distinction and would fail if `hide` were re-implemented as `clear`.",
       "tests": ["TEST-204", "TEST-203"]
+    },
+    {
+      "id": "DIV-012",
+      "title": "Point-anchored board elements carry a nominal zero-size box; placement and collision are renderer concerns",
+      "feature": "FEAT-012",
+      "introduced_by": "FEAT-012 behavior sweep (third source review)",
+      "decision": "The headless board document stores point-anchored elements (text, math, highlight, dots, scribble, count) with `bounds` derived from the declared point as `{ x, y, width: 0, height: 0 }`. Line/arrow carry a midpoint-plus-span box and box stores its declared center, but no element auto-flows, wraps, or avoids collision in the document model.",
+      "rationale": "The pinned reducer's layout — automatic placement of text near the cursor, collision avoidance, and box-span fitting — is driven by the render loop reading live DOM measurement (`renderer.ts`), not by `document.ts`. A headless plugin cannot measure a font it does not render, and ENT-010 puts rendering in the host. Emitting guessed boxes would fabricate geometry the host renderer must then fight; carrying the point plus a nominal box preserves every declared coordinate without inventing any.",
+      "parity_note": "The recovered schema conformance (TEST-203) is unaffected: every declared kwarg is accepted and enforced exactly as before. What changes is only what the *document* holds for point-anchored elements — the pin's renderer computes real boxes at render time from the same points, and a host renderer does the same from this document. TEST-207's target-resolution assertions are box-independent.",
+      "tests": ["TEST-203", "TEST-207"]
+    },
+    {
+      "id": "DIV-013",
+      "title": "Core value-type grammars accept the superset the recovered hosts share: minutes in durations, rgb()/rgba() colours, case-insensitive enums",
+      "feature": "FEAT-002",
+      "introduced_by": "FEAT-012 behavior sweep (found while validating whiteboard kwarg values)",
+      "decision": "`duration` accepts bare milliseconds, `ms`, `s`, and `m` units; `color` accepts `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`, `rgb()`, and `rgba()`; `enum` matching is case-insensitive unless a schema declares `caseSensitive`. Booleans remain exactly `true`/`false`.",
+      "rationale": "The corpus's one-line type strings ('a duration', 'a colour') underdetermine the accepted grammar, and the recovered host sources accept all three supersets: VC durations carry minute-suffixed values, Clio highlight colours arrive as `rgba(...)` from its own palette code, and producer output in the traces uses both upper- and lower-case enum spellings for the same value. A stricter grammar would have rejected output the hosts demonstrably accepted; a looser one (accepting `TRUE`, `1_000`) would repair malformed output, which DIV-004 forbids. The chosen grammar is stated in `packages/registry/src/value-types.ts` rather than left implicit.",
+      "parity_note": "Parity target is the recovered hosts' accepted input, not a single regex string in any one host file — no host source states its duration/colour grammar as a normative regex. TEST-172's property tests exercise the recovered schemas' values against this grammar, and TEST-203 pins the whiteboard-specific slice. A host consumer that relied on case-sensitivity must declare `caseSensitive: true` on its schema; that is the one behavioural change.",
+      "tests": ["TEST-172", "TEST-203"]
     }
   ]
 }
