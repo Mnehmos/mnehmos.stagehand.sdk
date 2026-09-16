@@ -78,13 +78,15 @@ from the other side. Two things follow from that and shape the whole feature:
   `content_ref` from `whiteboard.text`/`whiteboard.math` entirely, while still registering 15
   actions — so a test that counted actions stayed green through both errors. See `DIV-011`.
 
-- **FR-230 · Hide and clear are different operations.** `hide` MUST occlude the board while
+- **FR-230 · Hide, clear, and page semantics.** `hide` MUST occlude the board while
   preserving every committed element, and a subsequent `show` MUST restore exactly that content.
   `clear` MUST remove content. Neither may be implemented in terms of the other. This is the
   sharpest recovered semantic in the feature: Clio's surface list describes `hide` only as "hide
   whiteboard", while VC's records "occlude/deactivate presentation **without destroying content**",
-  and collapsing the two destroys a lesson's work silently.
-  → SURF-035, SURF-058 → CTR-035, CTR-058
+  and collapsing the two destroys a lesson's work silently. A `show` carrying a `page` kwarg MUST
+  create that page if it does not exist (starting empty) or activate it **with its content intact**;
+  a `show` carrying a `title` kwarg MUST update the target page's title.
+  → SURF-034, SURF-035, SURF-036, SURF-057, SURF-058, SURF-059 → CTR-034..039, CTR-057..059
 
 - **FR-231 · Truth and thinking layers are isolated.** Elements MUST carry a layer of `truth` or
   `thinking`. **Four** actions produce thinking-surface marks, as the pinned reducer commits them:
@@ -110,14 +112,19 @@ from the other side. Two things follow from that and shape the whole feature:
   `board` entity — `highlight`, `count`, `erase`, and `reveal` — MUST resolve its target against the
   board's committed elements, and resolution MUST NOT invent a position or an element for an id the
   board does not hold. An unknown target MUST be reported as unresolved (`E_UNRESOLVED_REF`) so the
-  command is rejected, never applied to a guessed element. `scribble` accepts an optional `target` and
-  MUST resolve it when one is supplied.
+  command is rejected, never applied to a guessed element. `scribble` accepts an optional
+  `target` that its schema does NOT declare as an entity, and the pinned reducer **falls back** when
+  it cannot be found rather than refusing. Additionally, `whiteboard.text`, `.math`, `.line`, `.box`,
+  `.arrow`, and `.scribble` MUST be rejected at the **state** layer when no board page is open.
   → SURF-065, SURF-069, SURF-070, SURF-071 → CTR-065, CTR-069, CTR-070, CTR-071 · T-079
 
 - **FR-234 · Clio compatibility mapping.** The six Clio surfaces MUST be served by the same 15
   actions, with each of the six mapped to its VC-superset counterpart and the mapping declared as
   data. Where the two hosts' recorded behavior differs, the VC superset wins and the difference is
   recorded — the mapping is what makes that choice explicit rather than accidental.
+  Additionally: board coordinates MUST be validated as a **0-100 space** (including box edge-span
+  checks in both dimensions) at the **spatial** layer, and every created element MUST carry write-on
+  timing (`reveal: 0` plus its action's `revealMs`).
   → SURF-034..039 → CTR-034..039 · T-078
 
 ## 4. Key Entities

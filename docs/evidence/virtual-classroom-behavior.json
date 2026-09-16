@@ -1,0 +1,38 @@
+{
+  "$comment": "Behavior-bearing pinned-file provenance for FEAT-012. The schema file (types.ts) owns wire shape; these files own observable behavior — reducer semantics, validation layers, failure cases, and injected seams. All interface facts, no source code vendored.",
+  "provenance": [
+    {
+      "file": "src/board/document.ts",
+      "role": "reducer: page state, element creation/removal, no-op discipline, layer assignment, count totals, highlight expiry, reveal timing",
+      "lines": "1-910",
+      "sha256": "50c9b8e54d64d454"
+    },
+    {
+      "file": "src/board/document.test.ts",
+      "role": "reducer tests: page-2 creation and return, count no-op for uncountable, highlight expiry, erase cleanup",
+      "lines": "1-185",
+      "sha256": "6de3ad255a4a3ded"
+    },
+    {
+      "file": "src/stagehand/validator.ts",
+      "role": "validator: five ordered layers (syntax/registry/entity/state/spatial), content_ref-XOR-inline, 0-100 board space, box edge span, active-board requirement, duplicate-id rejection for six actions only",
+      "lines": "1-502",
+      "sha256": "ed2881d7edbba681"
+    },
+    {
+      "file": "src/app/runtime.ts",
+      "role": "runtime: injected resolveContent seam (lesson content pack), pipeline ordering",
+      "lines": "1-908",
+      "sha256": "288183a8136dcfd5"
+    },
+    {
+      "file": "src/board/metrics.ts",
+      "role": "geometry: shapeVertices (circle/oval return []), shapeSideMidpoints (needs >= 3 corners), countableOf",
+      "lines": "478-533",
+      "sha256": "see metrics.ts full hash in the pin"
+    }
+  ],
+  "commit": "cd7253608297efd57921c965b7440f4d4081842f",
+  "retrieved": "2026-09-16",
+  "license": "Virtual Classroom has no project LICENSE (U-003). Interface facts only; no source code vendored. Constitution XI gates distribution of source-derived code on resolution."
+}
