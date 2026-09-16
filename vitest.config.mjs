@@ -23,6 +23,7 @@ export default defineConfig({
   test: {
     include: [
       'tests/**/*.test.mjs',
+      'tests/**/*.test.ts',
       'packages/*/test/**/*.test.ts',
       'packages/compatibility/*/test/**/*.test.ts',
       'plugins/*/test/**/*.test.ts',
