@@ -52,7 +52,7 @@ export {
   type CompileContext,
   type CompileFailedEvent,
   type CompileOutcome,
-  type CommandCompilerPass,
+  type TrustedCompilerPass,
   type EffectCommitter,
   type EntityResolutionMode,
   type EntityResolver,

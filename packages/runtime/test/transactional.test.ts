@@ -17,7 +17,7 @@ import { describe, expect, it } from 'vitest';
 import { validateCommand } from '@stagehand/registry';
 import {
   executeStagehandCommand,
-  type CommandCompilerPass,
+  type TrustedCompilerPass,
   type ExecutionOutcome,
   type RuntimeEvent,
 } from '../src/index.js';
@@ -138,7 +138,7 @@ describe('TEST-174 / every rejection path leaves the host untouched', () => {
 
   it('failing compiler pass', () => {
     const host = new MutationCountingCommitter();
-    const failing: CommandCompilerPass = {
+    const failing: TrustedCompilerPass = {
       name: 'failing',
       compile: () => ({
         kind: 'failed',
@@ -159,7 +159,7 @@ describe('TEST-174 / every rejection path leaves the host untouched', () => {
     // The partial-expansion case: an earlier stage produced committable output, and a later stage
     // failed. Nothing may reach the host — a half-applied scene is worse than no scene.
     const host = new MutationCountingCommitter();
-    const partial: CommandCompilerPass = {
+    const partial: TrustedCompilerPass = {
       name: 'partial',
       compile: () => ({
         kind: 'expanded',

@@ -12,7 +12,7 @@
  */
 
 import type {
-  CommandCompilerPass,
+  TrustedCompilerPass,
   CompilableCommand,
   CompileContext,
   CompileOutcome,
@@ -47,7 +47,7 @@ function failedPassError(pass: string, errors: readonly ValidationError[]): Vali
  */
 export function runCompilerPasses(
   command: CompilableCommand,
-  passes: readonly CommandCompilerPass[],
+  passes: readonly TrustedCompilerPass[],
   context: CompileContext,
 ): CompilationResult {
   let current: readonly CompilableCommand[] = [command];
@@ -106,7 +106,7 @@ export function runCompilerPasses(
 export function defineCompilerPass(
   name: string,
   table: Readonly<Record<string, readonly { action: string; payload?: Readonly<Record<string, unknown>> }[]>>,
-): CommandCompilerPass {
+): TrustedCompilerPass {
   return {
     name,
     compile(command: CompilableCommand): CompileOutcome {

@@ -25,7 +25,7 @@ import {
   canonicalizeCommandEntityRefs,
   runCompilerPasses,
   type CanonicalEffect,
-  type CommandCompilerPass,
+  type TrustedCompilerPass,
   type EffectCommitter,
   type EntityResolutionMode,
   type EntityResolver,
@@ -37,7 +37,7 @@ export interface ExecuteGroupOptions {
   readonly committer: EffectCommitter;
   readonly resolver?: EntityResolver;
   readonly entityResolution?: EntityResolutionMode;
-  readonly compilerPasses?: readonly CommandCompilerPass[];
+  readonly compilerPasses?: readonly TrustedCompilerPass[];
   /** Additional validation stages forwarded to FEAT-002. */
   readonly stages?: readonly ValidationStage[];
   readonly correlationId?: string;

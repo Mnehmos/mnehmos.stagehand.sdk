@@ -132,7 +132,7 @@ export type PrimitiveCommand = CompilableCommand;
  * Passes run in declared order over the accumulating result. A pass that does not recognise the
  * action returns `unchanged`; returning `failed` is terminal for the whole command.
  */
-export interface CommandCompilerPass {
+export interface TrustedCompilerPass {
   readonly name: string;
   compile(command: CompilableCommand, context: CompileContext): CompileOutcome;
 }
@@ -179,7 +179,7 @@ export interface CanonicalizeCommandResult {
 
 export interface ExecuteStagehandCommandOptions extends CanonicalizeCommandOptions {
   /** Compiler passes, run in order. */
-  readonly compilerPasses?: readonly CommandCompilerPass[];
+  readonly compilerPasses?: readonly TrustedCompilerPass[];
   /**
    * Host adapter. **Required**, and deliberately so: executing without a committer would be a silent
    * no-op, and a caller that only wanted canonicalisation should call

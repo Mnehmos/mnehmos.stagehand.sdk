@@ -16,7 +16,7 @@ import {
   defineCompilerPass,
   executeStagehandCommand,
   runCompilerPasses,
-  type CommandCompilerPass,
+  type TrustedCompilerPass,
   type CompilableCommand,
 } from '../src/index.js';
 import { MapResolver, MutationCountingCommitter } from './fake-host.js';
@@ -75,7 +75,7 @@ describe('TEST-175 / expansion goldens', () => {
   });
 
   it('declining is not failing: the command stays committable', () => {
-    const decliner: CommandCompilerPass = { name: 'decliner', compile: () => ({ kind: 'unchanged' }) };
+    const decliner: TrustedCompilerPass = { name: 'decliner', compile: () => ({ kind: 'unchanged' }) };
     const host = new MutationCountingCommitter();
     const outcome = executeStagehandCommand(registry, cmd('whiteboard.text', { id: 't' }), {
       committer: host,
@@ -107,14 +107,14 @@ describe('TEST-175 / ordering and composition', () => {
   });
 
   it('independent passes give the same result in either order', () => {
-    const expo: CommandCompilerPass = {
+    const expo: TrustedCompilerPass = {
       name: 'expo',
       compile: () => ({
         kind: 'expanded',
         commands: [primitive('x.one'), primitive('x.two')],
       }),
     };
-    const decliner: CommandCompilerPass = { name: 'decliner', compile: () => ({ kind: 'unchanged' }) };
+    const decliner: TrustedCompilerPass = { name: 'decliner', compile: () => ({ kind: 'unchanged' }) };
 
     const forward = runCompilerPasses(primitive('anything'), [expo, decliner], { action: 'a', plugin: 'p' });
     const reverse = runCompilerPasses(primitive('anything'), [decliner, expo], { action: 'a', plugin: 'p' });
@@ -134,7 +134,7 @@ describe('TEST-175 / expansion is all-or-nothing', () => {
   it('a failing pass discards the output of passes that already succeeded', () => {
     // Fails only on the primitives the first pass produced, so the first pass has already done work
     // by the time the failure happens.
-    const boom: CommandCompilerPass = {
+    const boom: TrustedCompilerPass = {
       name: 'boom',
       compile: (command) =>
         command.action.startsWith('fixture.primitive.')
@@ -152,7 +152,7 @@ describe('TEST-175 / expansion is all-or-nothing', () => {
   });
 
   it('refuses an expansion to zero commands rather than silently committing nothing', () => {
-    const annihilator: CommandCompilerPass = { name: 'annihilator', compile: () => ({ kind: 'expanded', commands: [] }) };
+    const annihilator: TrustedCompilerPass = { name: 'annihilator', compile: () => ({ kind: 'expanded', commands: [] }) };
     const result = runCompilerPasses(primitive('fixture.semantic'), [annihilator], {
       action: 'fixture.semantic',
       plugin: 'fixture',
