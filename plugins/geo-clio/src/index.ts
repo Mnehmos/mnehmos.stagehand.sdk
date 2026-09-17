@@ -72,7 +72,8 @@ function reduceGeo(doc: GeoClioDocument, action: string, kw: Readonly<Record<str
     case 'source.show': return { ...doc, revision: rev, activeSource: kw['id'] ?? null };
     case 'source.hide': return { ...doc, revision: rev, activeSource: null };
     case 'scene.title': return { ...doc, revision: rev, sceneTitle: kw['text'] ?? null };
-    case 'camera.center': case 'camera.focus_region': case 'camera.establish_globe': case 'camera.follow_marker':
+    case 'camera.establish_globe': return { ...doc, revision: rev, cameraZoom: Number(kw['zoom'] ?? '') || 1.4 };
+    case 'camera.center': case 'camera.focus_region': case 'camera.follow_marker':
       return { ...doc, revision: rev, cameraZoom: Number(kw['zoom'] ?? kw['zoom_level'] ?? '') || doc.cameraZoom };
     default: return { ...doc, revision: rev };
   }
