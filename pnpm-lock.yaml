@@ -23,6 +23,9 @@ importers:
       '@stagehand/plugin-classroom':
         specifier: workspace:*
         version: link:../../plugins/classroom
+      '@stagehand/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
 
   packages/authoring:
     dependencies:
@@ -118,6 +121,9 @@ importers:
       '@stagehand/readiness':
         specifier: workspace:*
         version: link:../../packages/readiness
+      '@stagehand/registry':
+        specifier: workspace:*
+        version: link:../../packages/registry
       '@stagehand/runtime':
         specifier: workspace:*
         version: link:../../packages/runtime

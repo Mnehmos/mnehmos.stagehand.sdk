@@ -16,6 +16,9 @@
       "path": "../../packages/readiness"
     },
     {
+      "path": "../../packages/registry"
+    },
+    {
       "path": "../../packages/runtime"
     },
     {

@@ -20,6 +20,7 @@
   "dependencies": {
     "@stagehand/plugin-whiteboard": "workspace:*",
     "@stagehand/readiness": "workspace:*",
+    "@stagehand/registry": "workspace:*",
     "@stagehand/runtime": "workspace:*",
     "@stagehand/trace": "workspace:*"
   }

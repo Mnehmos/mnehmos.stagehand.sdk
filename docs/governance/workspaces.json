@@ -1,6 +1,6 @@
 {
   "$comment": "Declarative workspace skeleton from docs/corpus/31_REBUILD_PLAN.md. tools/workspaces.mjs materialises it; tools/boundaries.mjs derives the dependency graph from owner_features via docs/governance/v2-ids.json, so internal dependency edges are never hand-maintained.",
-  "$additional_internal_dependencies": "Escape hatch for an edge the feature graph cannot express: two packages owned by the SAME feature, where one imports the other. Feature dependencies cannot be self-referential, so `packages/authoring` depending on `packages/core` (both owned by FEAT-004) is invisible to the derivation. Found by the build pipeline, not by the boundary gate — the gate checked declarations, and the declaration was missing.",
+  "$additional_internal_dependencies": "Escape hatch for an edge the feature graph cannot express: two packages owned by the SAME feature, where one imports the other. Feature dependencies cannot be self-referential, so `packages/authoring` depending on `packages/core` (both owned by FEAT-004) is invisible to the derivation. Found by the build pipeline, not by the boundary gate \u2014 the gate checked declarations, and the declaration was missing.",
   "root": {
     "packageManager": "pnpm@10.7.0",
     "node": ">=20.11.0",
@@ -12,7 +12,9 @@
       "name": "@stagehand/core",
       "layer": "core",
       "kind": "package",
-      "owner_features": ["FEAT-004"],
+      "owner_features": [
+        "FEAT-004"
+      ],
       "description": "Canonical effect IR, compound/beat choreography types, and the public assembly surface."
     },
     {
@@ -20,7 +22,9 @@
       "name": "@stagehand/parser",
       "layer": "core",
       "kind": "package",
-      "owner_features": ["FEAT-001"],
+      "owner_features": [
+        "FEAT-001"
+      ],
       "description": "Mixed-stream lexer and parser for narration-plus-control input, batch and streaming."
     },
     {
@@ -28,7 +32,9 @@
       "name": "@stagehand/registry",
       "layer": "core",
       "kind": "package",
-      "owner_features": ["FEAT-002"],
+      "owner_features": [
+        "FEAT-002"
+      ],
       "description": "Single-source capability registry driving validation, introspection, and authoring help."
     },
     {
@@ -36,7 +42,9 @@
       "name": "@stagehand/runtime",
       "layer": "core",
       "kind": "package",
-      "owner_features": ["FEAT-003"],
+      "owner_features": [
+        "FEAT-003"
+      ],
       "description": "Effect compilation, semantic reference resolution, and authorized commit through a host adapter."
     },
     {
@@ -44,7 +52,9 @@
       "name": "@stagehand/trace",
       "layer": "core",
       "kind": "package",
-      "owner_features": ["FEAT-005"],
+      "owner_features": [
+        "FEAT-005"
+      ],
       "description": "Separate public and production event channels plus the versioned replay envelope."
     },
     {
@@ -52,7 +62,9 @@
       "name": "@stagehand/readiness",
       "layer": "core",
       "kind": "package",
-      "owner_features": ["FEAT-006"],
+      "owner_features": [
+        "FEAT-006"
+      ],
       "description": "Deadline-bounded, generation-stamped synchronization gates for asynchronous host effects."
     },
     {
@@ -60,8 +72,13 @@
       "name": "@stagehand/authoring",
       "layer": "core",
       "kind": "package",
-      "owner_features": ["FEAT-004", "FEAT-011"],
-      "additional_internal_dependencies": ["@stagehand/core"],
+      "owner_features": [
+        "FEAT-004",
+        "FEAT-011"
+      ],
+      "additional_internal_dependencies": [
+        "@stagehand/core"
+      ],
       "description": "Author-facing helpers: capability introspection digests, receipt linting, and choreography authoring types."
     },
     {
@@ -69,7 +86,9 @@
       "name": "@stagehand/compatibility-llm-chess",
       "layer": "compatibility",
       "kind": "package",
-      "owner_features": ["FEAT-016"],
+      "owner_features": [
+        "FEAT-016"
+      ],
       "description": "Opt-in compatibility producer for the LLM-Chess annotation dialect, including quarantined inference."
     },
     {
@@ -77,7 +96,9 @@
       "name": "@stagehand/plugin-whiteboard",
       "layer": "plugin",
       "kind": "plugin",
-      "owner_features": ["FEAT-012"],
+      "owner_features": [
+        "FEAT-012"
+      ],
       "description": "Reusable screen-space explanatory canvas: text, math, shapes, counting, erasure, reveal."
     },
     {
@@ -85,7 +106,13 @@
       "name": "@stagehand/plugin-geo-clio",
       "layer": "plugin",
       "kind": "plugin",
-      "owner_features": ["FEAT-007", "FEAT-008", "FEAT-009", "FEAT-010", "FEAT-011"],
+      "owner_features": [
+        "FEAT-007",
+        "FEAT-008",
+        "FEAT-009",
+        "FEAT-010",
+        "FEAT-011"
+      ],
       "description": "Geospatial camera, annotation, layers, pieces, and evidence presentation."
     },
     {
@@ -93,15 +120,24 @@
       "name": "@stagehand/plugin-classroom",
       "layer": "plugin",
       "kind": "plugin",
-      "owner_features": ["FEAT-013", "FEAT-014", "FEAT-015"],
-      "description": "Embodied classroom staging, projector/media orchestration, and lesson state."
+      "owner_features": [
+        "FEAT-013",
+        "FEAT-014",
+        "FEAT-015"
+      ],
+      "description": "Embodied classroom staging, projector/media orchestration, and lesson state.",
+      "additional_internal_dependencies": [
+        "@stagehand/registry"
+      ]
     },
     {
       "dir": "plugins/chess",
       "name": "@stagehand/plugin-chess",
       "layer": "plugin",
       "kind": "plugin",
-      "owner_features": ["FEAT-016"],
+      "owner_features": [
+        "FEAT-016"
+      ],
       "description": "Chess annotation compatibility plugin: dialect handling and chess-legality validation."
     },
     {
@@ -109,7 +145,9 @@
       "name": "@stagehand/plugin-dom-presenter",
       "layer": "plugin",
       "kind": "plugin",
-      "owner_features": ["FEAT-017"],
+      "owner_features": [
+        "FEAT-017"
+      ],
       "description": "Word-anchored DOM presentation: focus, highlight, clear, and diagram choreography."
     },
     {
@@ -117,8 +155,13 @@
       "name": "@stagehand/example-virtual-classroom-host",
       "layer": "example",
       "kind": "example",
-      "owner_features": ["FEAT-018"],
-      "description": "Reference host keeping model-provider and TTS selection outside the SDK core."
+      "owner_features": [
+        "FEAT-018"
+      ],
+      "description": "Reference host keeping model-provider and TTS selection outside the SDK core.",
+      "additional_internal_dependencies": [
+        "@stagehand/runtime"
+      ]
     }
   ]
 }

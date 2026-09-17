@@ -11,6 +11,9 @@
   "references": [
     {
       "path": "../../plugins/classroom"
+    },
+    {
+      "path": "../../packages/runtime"
     }
   ]
 }
