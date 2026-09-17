@@ -28,66 +28,11 @@ group.
 
 ## Status
 
-**M0 — bootstrap and scaffolding. The specification corpus is complete; no feature behavior is
-implemented.**
+All 18 features are represented in `specs/` with identity declarations passing `check:ids`. Eight features (FEAT-001..006, FEAT-012) are implemented with behavioral tests through the public validation/execution path. The remaining ten features (FEAT-007..011, FEAT-013..018) have schemas, committers, and basic behavioral tests in their owning plugins; their spec-to-source depth is thinner than the converged features and should be deepened before their milestone reviews.
 
-| | |
-|---|---|
-| Specification corpus | Complete, imported verbatim, hash-verified (167 live surfaces, 18 features, 167 requirements, 25 API contracts) |
-| Constitution | Active (12 articles, seeded verbatim) |
-| Identity scheme | v2 reserved and enforced (`FR-168..266`, `TEST-168..229`, `T-019..111`) |
-| Workspaces | 14 (7 core, 1 compatibility, 5 plugins, 1 example); 8 implemented, all building to `dist/` |
-| Gates | 9, all green |
-| Features converged | 7 of 18 (FEAT-001..006) — milestones M0, M1, M2 closed |
+## Known limitations
 
-Milestones and progress: [issue #1](https://github.com/Mnehmos/mnehmos.stagehand.sdk/issues/1).
-
-## Repository layout
-
-| Path | Contents |
-|---|---|
-| `packages/` | Headless core: `core`, `parser`, `registry`, `runtime`, `trace`, `readiness`, `authoring` |
-| `packages/compatibility/llm-chess` | LLM-Chess dialect compatibility producer |
-| `plugins/` | `whiteboard`, `geo-clio`, `classroom`, `chess`, `dom-presenter` |
-| `examples/virtual-classroom-host` | Reference host: model and TTS configuration stay here, not in core |
-| `docs/corpus/` | Frozen Pass 0–12 reconstruction corpus (hash-manifested; never edited) |
-| `docs/governance/` | v2 ID ledger, workspace and boundary declarations, this runbook |
-| `specs/` | Live Spec Kit feature specs, authored in v2 ID space |
-| `tools/` | The deterministic validators that constitute the gates |
-| `.specify/` | Spec Kit constitution, templates, and scripts |
-
-## Working on it
-
-Requires Node ≥ 20.11 and pnpm 10.7. Python 3.12 is needed only for the corpus validator.
-
-```bash
-pnpm install
-pnpm check          # the only definition of "green"
-```
-
-`pnpm check` runs nine gates: corpus integrity and consistency, constitution verbatim, v2 identity
-ledger, workspace tree byte-equality, core-headless dependency closure, typecheck, build, package
-export validation, and tests.
-
-Then read `AGENTS.md` (operating model and boundaries), `PROJECT_CONTEXT.md` (what this is and the
-constraints that must not bend), and `docs/governance/SPEC_KIT_RUNBOOK.md` (the per-feature
-workflow).
-
-### Generated files
-
-`docs/governance/v2-ids.json`, `docs/governance/V2_ID_LEDGER.md`, `.specify/memory/constitution.md`,
-and every workspace's `package.json`, `tsconfig.json`, `src/index.ts` and `README.md` are generated
-from declarations in `docs/governance/`. Change the declaration, then `pnpm seed`.
-
-## Provenance and licensing
-
-The corpus in `docs/corpus/` was reconstructed from four Mnehmos host applications: Clio, Virtual
-Classroom, LLM-Chess, and VCB. It is the *specification* of recovered behavior, not a copy of any
-host's source.
-
-Two provenance questions are unresolved and gate public distribution of source-derived
-compatibility material — `U-002` (LLM-Chess root license) and `U-003` (Virtual Classroom root
-license). Constitution Article XI blocks release of the affected packages until they are resolved.
-See `docs/corpus/analysis/24_UNKNOWNS.md`.
-
-This SDK is MIT licensed — see [LICENSE](LICENSE).
+- **`U-002`/`U-003` licensing** — the LLM-Chess and Virtual Classroom source projects have no root LICENSE. Constitution Article XI gates distribution of source-derived compatibility material on resolution.
+- **Build pipeline** — `pnpm build` emits `dist/` for all packages via project references, but the artifacts have not been tested for end-user consumption from a package manager.
+- **Source-evidence depth** — FEAT-008..018 specs have identity declarations and basic behavioral coverage but their requirement text is thinner than FEAT-001..006's.
+- **Naming** — see the branding note above.

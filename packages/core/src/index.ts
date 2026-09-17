@@ -49,3 +49,5 @@ export {
   type GroupCommandOutcome,
   type GroupResult,
 } from './types.js';
+
+export { createHost, Host, type HostOptions, type HostPlugin, type HostProcessResult } from "./host.js";
